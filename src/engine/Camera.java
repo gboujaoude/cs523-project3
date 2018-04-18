@@ -17,7 +17,7 @@ import engine.math.Vector3;
  * @author Justin Hall
  */
 public class Camera {
-    private RenderEntity _attachedTo;
+    private Actor _attachedTo;
     private Vector3 _worldTranslate = new Vector3(0.0);
     private Vector3 _editedEntityLocation = new Vector3(0.0);
     private double _widthScalar = 2.5;
@@ -26,7 +26,7 @@ public class Camera {
     /**
      * Returns the entity that this camera was attached to
      */
-    public RenderEntity getEntity()
+    public Actor getEntity()
     {
         return _attachedTo;
     }
@@ -34,7 +34,7 @@ public class Camera {
     /**
      * Attaches this camera to the given entity
      */
-    public void attachToEntity(RenderEntity entity)
+    public void attachToEntity(Actor entity)
     {
         _attachedTo = entity;
     }
@@ -46,7 +46,7 @@ public class Camera {
      */
     public void setAsMainCamera()
     {
-        Engine.getMessagePump().sendMessage(new Message(Singleton.SET_MAIN_CAMERA, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.SET_MAIN_CAMERA, this));
     }
 
     /**
@@ -60,8 +60,8 @@ public class Camera {
             _editedEntityLocation.setXYZ(0.0, 0.0, 0.0);
             return _editedEntityLocation;
         }
-        int scrWidth = Engine.getConsoleVariables().find(Singleton.SCR_WIDTH).getcvarAsInt();
-        int scrHeight = Engine.getConsoleVariables().find(Singleton.SCR_HEIGHT).getcvarAsInt();
+        int scrWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsInt();
+        int scrHeight = Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsInt();
         _editedEntityLocation.setXYZ(scrWidth / _widthScalar, scrHeight / _heightScalar, 0.0);
         return _editedEntityLocation;
     }
@@ -80,14 +80,14 @@ public class Camera {
             _worldTranslate.setXYZ(0.0, 0.0, 0.0);
             return _worldTranslate;
         }
-        double scrWidth = Engine.getConsoleVariables().find(Singleton.SCR_WIDTH).getcvarAsInt();
-        double scrHeight = Engine.getConsoleVariables().find(Singleton.SCR_HEIGHT).getcvarAsInt();
+        double scrWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsInt();
+        double scrHeight = Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsInt();
         double scrWidthModified = scrWidth / _widthScalar;
         double scrHeightModified = scrHeight / _heightScalar;
-        double worldWidth = Engine.getConsoleVariables().find(Singleton.WORLD_WIDTH).getcvarAsFloat();
-        double worldHeight = Engine.getConsoleVariables().find(Singleton.WORLD_HEIGHT).getcvarAsFloat();
-        double worldStartX = Engine.getConsoleVariables().find(Singleton.WORLD_START_X).getcvarAsFloat();
-        double worldStartY = Engine.getConsoleVariables().find(Singleton.WORLD_START_Y).getcvarAsFloat();
+        double worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsFloat();
+        double worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsFloat();
+        double worldStartX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsFloat();
+        double worldStartY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsFloat();
         double worldEndX = worldWidth + worldStartX;
         double worldEndY = worldHeight + worldStartY;
         double locX = _attachedTo.getLocationX();

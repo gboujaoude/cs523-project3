@@ -1,7 +1,5 @@
 package engine;
 
-import javafx.animation.AnimationTimer;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
@@ -11,7 +9,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -196,7 +193,7 @@ public class Engine implements PulseEntity, MessageHandler {
         ArrayList<ConsoleVariable> changedVars = getConsoleVariables().getVariableChangesSinceLastCall();
         for (ConsoleVariable cvar : changedVars)
         {
-            _messageSystem.get().sendMessage(new Message(Singleton.CONSOLE_VARIABLE_CHANGED, cvar));
+            _messageSystem.get().sendMessage(new Message(Constants.CONSOLE_VARIABLE_CHANGED, cvar));
         }
         // Make sure we keep the messages flowing
         getMessagePump().dispatchMessages();
@@ -240,29 +237,29 @@ public class Engine implements PulseEntity, MessageHandler {
     public void handleMessage(Message message) {
         switch(message.getMessageName())
         {
-            case Singleton.ADD_PULSE_ENTITY:
+            case Constants.ADD_PULSE_ENTITY:
                 _registerPulseEntity((PulseEntity)message.getMessageData());
                 break;
-            case Singleton.REMOVE_PULSE_ENTITY:
+            case Constants.REMOVE_PULSE_ENTITY:
                 _deregisterPulseEntity((PulseEntity)message.getMessageData());
                 break;
-            case Singleton.REMOVE_ALL_PULSE_ENTITIES:
+            case Constants.REMOVE_ALL_PULSE_ENTITIES:
                 _pulseEntities.clear();
                 break;
-            case Singleton.CONSOLE_VARIABLE_CHANGED:
+            case Constants.CONSOLE_VARIABLE_CHANGED:
             {
                 ConsoleVariable cvar = (ConsoleVariable)message.getMessageData();
-                if (cvar.getcvarName().equals(Singleton.CALCULATE_MOVEMENT))
+                if (cvar.getcvarName().equals(Constants.CALCULATE_MOVEMENT))
                 {
                     _updateEntities = Boolean.parseBoolean(cvar.getcvarValue());
                 }
                 break;
             }
-            case Singleton.PERFORM_SOFT_RESET:
+            case Constants.PERFORM_SOFT_RESET:
                 System.err.println("Engine: performing an in-place soft reset");
                 _softRestart();
                 break;
-            case Singleton.ADD_LOGIC_ENTITY:
+            case Constants.ADD_LOGIC_ENTITY:
             {
                 LogicEntity entity = (LogicEntity)message.getMessageData();
                 LogicEntityTask task = new LogicEntityTask(entity, this);
@@ -270,7 +267,7 @@ public class Engine implements PulseEntity, MessageHandler {
                 _notifyOfLogicTaskCompletion(task); // This will schedule it on the logic threads
                 break;
             }
-            case Singleton.REMOVE_LOGIC_ENTITY:
+            case Constants.REMOVE_LOGIC_ENTITY:
             {
                 LogicEntity entity = (LogicEntity)message.getMessageData();
                 _registeredLogicEntities.remove(entity);
@@ -331,10 +328,10 @@ public class Engine implements PulseEntity, MessageHandler {
         synchronized(this) {
             getConsoleVariables().loadConfigFile("src/resources/engine.cfg");
             _registerDefaultCVars();
-            _maxFrameRate = Math.abs(Engine.getConsoleVariables().find(Singleton.ENG_LIMIT_FPS).getcvarAsInt());
+            _maxFrameRate = Math.abs(Engine.getConsoleVariables().find(Constants.ENG_LIMIT_FPS).getcvarAsInt());
             _registeredLogicEntities.clear();
             boolean headless = true;
-            if (!Engine.getConsoleVariables().find(Singleton.HEADLESS).getcvarAsBool()) {
+            if (!Engine.getConsoleVariables().find(Constants.HEADLESS).getcvarAsBool()) {
                 headless = false;
                 if (_initialStage == null) {
                     _initialStage = new Stage();
@@ -342,21 +339,21 @@ public class Engine implements PulseEntity, MessageHandler {
                     _initialStage.setOnCloseRequest((value) -> shutdown());
                 }
             }
-            _updateEntities = Boolean.parseBoolean(getConsoleVariables().find(Singleton.CALCULATE_MOVEMENT).getcvarValue());
+            _updateEntities = Boolean.parseBoolean(getConsoleVariables().find(Constants.CALCULATE_MOVEMENT).getcvarValue());
             // Make sure we register all of the message types
             _registerMessageTypes();
             // Signal interest in the things the simulation.engine needs to know about
-            getMessagePump().signalInterest(Singleton.ADD_PULSE_ENTITY, this);
-            getMessagePump().signalInterest(Singleton.REMOVE_PULSE_ENTITY, this);
-            getMessagePump().signalInterest(Singleton.CONSOLE_VARIABLE_CHANGED, this);
-            getMessagePump().signalInterest(Singleton.REMOVE_ALL_PULSE_ENTITIES, this);
-            getMessagePump().signalInterest(Singleton.PERFORM_SOFT_RESET, this);
-            getMessagePump().signalInterest(Singleton.ADD_LOGIC_ENTITY, this);
-            getMessagePump().signalInterest(Singleton.REMOVE_LOGIC_ENTITY, this);
+            getMessagePump().signalInterest(Constants.ADD_PULSE_ENTITY, this);
+            getMessagePump().signalInterest(Constants.REMOVE_PULSE_ENTITY, this);
+            getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
+            getMessagePump().signalInterest(Constants.REMOVE_ALL_PULSE_ENTITIES, this);
+            getMessagePump().signalInterest(Constants.PERFORM_SOFT_RESET, this);
+            getMessagePump().signalInterest(Constants.ADD_LOGIC_ENTITY, this);
+            getMessagePump().signalInterest(Constants.REMOVE_LOGIC_ENTITY, this);
             if (_taskManager.get() != null) {
                 _taskManager.get().stop();
             }
-            _taskManager.set(new TaskManager(getConsoleVariables().find(Singleton.NUM_LOGIC_THREADS).getcvarAsInt()));
+            _taskManager.set(new TaskManager(getConsoleVariables().find(Constants.NUM_LOGIC_THREADS).getcvarAsInt()));
             _taskManager.get().start();
             _pulseEntities = new HashSet<>();
             _lastFrameTimeMS = System.currentTimeMillis();
@@ -367,7 +364,7 @@ public class Engine implements PulseEntity, MessageHandler {
                 _renderer.init(gc);
             }
             _application.init();
-            _maxFrameRate = getConsoleVariables().find(Singleton.ENG_MAX_FPS).getcvarAsInt();
+            _maxFrameRate = getConsoleVariables().find(Constants.ENG_MAX_FPS).getcvarAsInt();
         }
     }
 
@@ -383,9 +380,9 @@ public class Engine implements PulseEntity, MessageHandler {
     private void _softRestart()
     {
         synchronized(this) {
-            getMessagePump().sendMessage(new Message(Singleton.REMOVE_ALL_RENDER_ENTITIES));
-            getMessagePump().sendMessage(new Message(Singleton.REMOVE_ALL_PULSE_ENTITIES));
-            getMessagePump().sendMessage(new Message(Singleton.REMOVE_ALL_UI_ELEMENTS));
+            getMessagePump().sendMessage(new Message(Constants.REMOVE_ALL_RENDER_ENTITIES));
+            getMessagePump().sendMessage(new Message(Constants.REMOVE_ALL_PULSE_ENTITIES));
+            getMessagePump().sendMessage(new Message(Constants.REMOVE_ALL_UI_ELEMENTS));
             // Dispatch the messages immediately
             getMessagePump().dispatchMessages();
             // Reallocate these only
@@ -397,39 +394,39 @@ public class Engine implements PulseEntity, MessageHandler {
 
     private void _registerDefaultCVars()
     {
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.ENG_MAX_FPS, "60", "60"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.ENG_LIMIT_FPS, "true", "true"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.WORLD_START_X, "0", "0"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.WORLD_START_Y, "0", "0"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.WORLD_WIDTH, "1000", "0"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.WORLD_HEIGHT, "1000", "0"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.CALCULATE_MOVEMENT, "true", "true"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.NUM_LOGIC_THREADS, "2", "2"));
-        getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.HEADLESS, "false", "false"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ENG_MAX_FPS, "60", "60"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ENG_LIMIT_FPS, "true", "true"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.WORLD_START_X, "0", "0"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.WORLD_START_Y, "0", "0"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.WORLD_WIDTH, "1000", "0"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.WORLD_HEIGHT, "1000", "0"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.CALCULATE_MOVEMENT, "true", "true"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.NUM_LOGIC_THREADS, "2", "2"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.HEADLESS, "false", "false"));
     }
 
     private void _registerMessageTypes()
     {
-        getMessagePump().registerMessage(new Message(Singleton.ADD_PULSE_ENTITY));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_PULSE_ENTITY));
-        getMessagePump().registerMessage(new Message(Singleton.ADD_UI_ELEMENT));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_UI_ELEMENT));
-        getMessagePump().registerMessage(new Message(Singleton.SET_FULLSCREEN));
-        getMessagePump().registerMessage(new Message(Singleton.SET_SCR_HEIGHT));
-        getMessagePump().registerMessage(new Message(Singleton.SET_SCR_WIDTH));
-        getMessagePump().registerMessage(new Message(Singleton.ADD_GRAPHICS_ENTITY));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_GRAPHICS_ENTITY));
-        getMessagePump().registerMessage(new Message(Singleton.REGISTER_TEXTURE));
-        getMessagePump().registerMessage(new Message(Singleton.SET_MAIN_CAMERA));
-        getMessagePump().registerMessage(new Message(Singleton.CONSOLE_VARIABLE_CHANGED));
+        getMessagePump().registerMessage(new Message(Constants.ADD_PULSE_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_PULSE_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.ADD_UI_ELEMENT));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_UI_ELEMENT));
+        getMessagePump().registerMessage(new Message(Constants.SET_FULLSCREEN));
+        getMessagePump().registerMessage(new Message(Constants.SET_SCR_HEIGHT));
+        getMessagePump().registerMessage(new Message(Constants.SET_SCR_WIDTH));
+        getMessagePump().registerMessage(new Message(Constants.ADD_GRAPHICS_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_GRAPHICS_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.REGISTER_TEXTURE));
+        getMessagePump().registerMessage(new Message(Constants.SET_MAIN_CAMERA));
+        getMessagePump().registerMessage(new Message(Constants.CONSOLE_VARIABLE_CHANGED));
         getMessagePump().registerMessage(new Message(R_RENDER_SCENE));
         getMessagePump().registerMessage(new Message(R_UPDATE_ENTITIES));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_ALL_UI_ELEMENTS));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_ALL_PULSE_ENTITIES));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_ALL_RENDER_ENTITIES));
-        getMessagePump().registerMessage(new Message(Singleton.PERFORM_SOFT_RESET));
-        getMessagePump().registerMessage(new Message(Singleton.ADD_LOGIC_ENTITY));
-        getMessagePump().registerMessage(new Message(Singleton.REMOVE_LOGIC_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_ALL_UI_ELEMENTS));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_ALL_PULSE_ENTITIES));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_ALL_RENDER_ENTITIES));
+        getMessagePump().registerMessage(new Message(Constants.PERFORM_SOFT_RESET));
+        getMessagePump().registerMessage(new Message(Constants.ADD_LOGIC_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.REMOVE_LOGIC_ENTITY));
     }
 
     /**

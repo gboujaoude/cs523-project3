@@ -3,6 +3,8 @@ package engine;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.Font;
 
+import java.util.HashSet;
+
 /**
  * Allows you to draw text on the screen and manipulate it like you would
  * a shape or textured object.
@@ -44,5 +46,9 @@ public class Text2D extends GraphicsEntity {
     public void setTexture(String texture)
     {
         // Do nothing
+    }
+
+    @Override
+    public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
     }
 }

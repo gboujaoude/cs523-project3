@@ -2,6 +2,8 @@ package engine;
 
 import javafx.scene.canvas.GraphicsContext;
 
+import java.util.HashSet;
+
 /**
  * Simple class for representing a 2D oval, optionally textured.
  */
@@ -19,5 +21,9 @@ public class Circle2D extends GraphicsEntity {
     @Override
     public void render(GraphicsContext gc, double x, double y) {
         gc.fillOval(x, y, getWidth(), getHeight());
+    }
+
+    @Override
+    public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
     }
 }

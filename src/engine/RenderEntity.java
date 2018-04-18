@@ -17,7 +17,7 @@ public abstract class RenderEntity extends GraphicsEntity implements PulseEntity
     public void addToWorld()
     {
         super.addToWorld();
-        Engine.getMessagePump().sendMessage(new Message(Singleton.ADD_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
     }
 
     /**
@@ -27,7 +27,7 @@ public abstract class RenderEntity extends GraphicsEntity implements PulseEntity
     public void removeFromWorld()
     {
         super.addToWorld();
-        Engine.getMessagePump().sendMessage(new Message(Singleton.REMOVE_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
     }
 
     @Override

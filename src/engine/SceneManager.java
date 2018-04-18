@@ -2,7 +2,6 @@ package engine;
 
 import javafx.scene.Node;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,7 +96,7 @@ public class SceneManager {
      */
     public void activatePulseEntities() {
         for (Map.Entry<PulseEntity, Object> entry : _pulseEntities.entrySet()) {
-            _sendMessage(Singleton.ADD_PULSE_ENTITY, entry.getKey());
+            _sendMessage(Constants.ADD_PULSE_ENTITY, entry.getKey());
         }
     }
 
@@ -107,7 +106,7 @@ public class SceneManager {
     public void activateGUIElements() {
         synchronized (_guiElements) {
             for (Node node : _guiElements) {
-                _sendMessage(Singleton.ADD_UI_ELEMENT, node);
+                _sendMessage(Constants.ADD_UI_ELEMENT, node);
             }
         }
     }
@@ -117,7 +116,7 @@ public class SceneManager {
      */
     public void activateLogicEntities() {
         for (Map.Entry<LogicEntity, Object> entry : _logicEntities.entrySet()) {
-            _sendMessage(Singleton.ADD_LOGIC_ENTITY, entry.getKey());
+            _sendMessage(Constants.ADD_LOGIC_ENTITY, entry.getKey());
         }
     }
 
@@ -135,7 +134,7 @@ public class SceneManager {
      */
     public void deactivatePulseEntities() {
         for (Map.Entry<PulseEntity, Object> entry : _pulseEntities.entrySet()) {
-            _sendMessage(Singleton.REMOVE_PULSE_ENTITY, entry.getKey());
+            _sendMessage(Constants.REMOVE_PULSE_ENTITY, entry.getKey());
         }
     }
 
@@ -145,7 +144,7 @@ public class SceneManager {
     public void deactivateGUIElements() {
         synchronized (_guiElements) {
             for (Node node : _guiElements) {
-                _sendMessage(Singleton.REMOVE_UI_ELEMENT, node);
+                _sendMessage(Constants.REMOVE_UI_ELEMENT, node);
             }
         }
     }
@@ -155,7 +154,7 @@ public class SceneManager {
      */
     public void deactivateLogicEntities() {
         for (Map.Entry<LogicEntity, Object> entry : _logicEntities.entrySet()) {
-            _sendMessage(Singleton.REMOVE_LOGIC_ENTITY, entry.getKey());
+            _sendMessage(Constants.REMOVE_LOGIC_ENTITY, entry.getKey());
         }
     }
 

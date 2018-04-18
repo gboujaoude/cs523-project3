@@ -4,12 +4,12 @@ package engine;
  * All absolutely critical global variables - keep them as simple as possible
  * and final unless you must mutate them
  */
-public class Singleton {
+public class Constants {
     /**
      * The following are message types that the message pump is
      * guaranteed to recognize
      *
-     * To use them, use Singleton.simulation.engine.getMessagePump().sendMessage(new Message(...))
+     * To use them, use Constants.simulation.engine.getMessagePump().sendMessage(new Message(...))
      */
     // Sets the width of the screen
     public static final String SET_SCR_WIDTH = "set_scr_width";
@@ -56,7 +56,7 @@ public class Singleton {
      * The following are console variables that will be registered at startup
      * so you an depend on them being there
      *
-     * To use them, use Singleton.simulation.engine.getConsoleVariables().find(...)
+     * To use them, use Constants.simulation.engine.getConsoleVariables().find(...)
      */
     // Represents the title
     public static final String SCR_TITLE = "scr_title";

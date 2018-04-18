@@ -2,6 +2,8 @@ package engine;
 
 import engine.math.Vector3;
 
+import java.util.HashSet;
+
 /**
  * This class sits at the top of the hierarchy of objects
  * which can be registered with the world. Regardless of
@@ -19,7 +21,7 @@ import engine.math.Vector3;
  *
  * @author Justin Hall
  */
-public abstract class Actor {
+public abstract class Actor implements CollisionEventCallback {
     private Vector3 _translation = new Vector3(0,0,1); // z-component should stay 1 for 2D
     private Vector3 _speed = new Vector3(0, 0, 0);
     private Vector3 _acceleration = new Vector3(0, 0, 0);
@@ -30,6 +32,19 @@ public abstract class Actor {
     private boolean _isStaticActor = false; // If true it will not be transformed into camera space
     private boolean _constrainXMovement = false;
     private boolean _constrainYMovement = false;
+    private HashSet<CollisionEventCallback> _collisionCallbacks = new HashSet<>();
+
+    public void attachCollisionCallback(CollisionEventCallback callback) {
+        _collisionCallbacks.add(callback);
+    }
+
+    public void removeCollisionCallback(CollisionEventCallback callback) {
+        _collisionCallbacks.remove(callback);
+    }
+
+    public HashSet<CollisionEventCallback> getCollisionEventCallbacks() {
+        return _collisionCallbacks;
+    }
 
     /**
      * Tells the renderer whether this actor should be transformed as the camera

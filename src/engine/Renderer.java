@@ -27,11 +27,12 @@ public class Renderer implements MessageHandler {
     private HashMap<String, ImageView> _textures = new HashMap<>();
     private HashSet<GraphicsEntity> _entities = new HashSet<>();
     private HashSet<ActorGraph> _rootSet = new HashSet<>();
+    private QuadTree<GraphicsEntity> _graphicsEntities;
     private TreeMap<Integer, ArrayList<GraphicsEntity>> _drawOrder = new TreeMap<>();
     private Camera _worldCamera = new Camera(); // Start with a default camera
     private Rotate _rotation = new Rotate(0);
     private ArrayList<Task> _collisionTask;
-    private CollisionDetection _collision;
+    private PhysicsSimulation _collision;
     private volatile boolean _renderedScene = false;
     private volatile boolean _updatingEntities = false;
 
@@ -39,20 +40,26 @@ public class Renderer implements MessageHandler {
     {
         _gc = gc;
         _rotation.setAxis(new Point3D(0, 0, 1)); // In 2D we rotate about the z-axis
-        _collision = new CollisionDetection();
+        _collision = new PhysicsSimulation();
         _collision.init();
         _collisionTask = new ArrayList<>();
         _collisionTask.add(_collision);
         _renderedScene = false;
+        int worldX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+        int worldY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+        int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+        int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
+        _graphicsEntities = new QuadTree<>(worldX, worldY, worldWidth > worldHeight ? worldWidth : worldHeight,
+                10, 100);
         //_updatingEntities = false;
         // Signal interest
-        Engine.getMessagePump().signalInterest(Singleton.ADD_GRAPHICS_ENTITY, this);
-        Engine.getMessagePump().signalInterest(Singleton.REMOVE_GRAPHICS_ENTITY, this);
-        Engine.getMessagePump().signalInterest(Singleton.REGISTER_TEXTURE, this);
-        Engine.getMessagePump().signalInterest(Singleton.SET_MAIN_CAMERA, this);
+        Engine.getMessagePump().signalInterest(Constants.ADD_GRAPHICS_ENTITY, this);
+        Engine.getMessagePump().signalInterest(Constants.REMOVE_GRAPHICS_ENTITY, this);
+        Engine.getMessagePump().signalInterest(Constants.REGISTER_TEXTURE, this);
+        Engine.getMessagePump().signalInterest(Constants.SET_MAIN_CAMERA, this);
         Engine.getMessagePump().signalInterest(Engine.R_RENDER_SCENE, this);
         Engine.getMessagePump().signalInterest(Engine.R_UPDATE_ENTITIES, this);
-        Engine.getMessagePump().signalInterest(Singleton.REMOVE_ALL_RENDER_ENTITIES, this);
+        Engine.getMessagePump().signalInterest(Constants.REMOVE_ALL_RENDER_ENTITIES, this);
     }
 
     @Override
@@ -69,16 +76,16 @@ public class Renderer implements MessageHandler {
                 _renderedScene = false;
                 Engine.scheduleLogicTasks(_collisionTask, () -> _updatingEntities = false);
                 break;
-            case Singleton.ADD_GRAPHICS_ENTITY:
+            case Constants.ADD_GRAPHICS_ENTITY:
                 _entities.add((GraphicsEntity) message.getMessageData());
                 break;
-            case Singleton.REMOVE_GRAPHICS_ENTITY:
+            case Constants.REMOVE_GRAPHICS_ENTITY:
                 _entities.remove((GraphicsEntity)message.getMessageData());
                 break;
-            case Singleton.REMOVE_ALL_RENDER_ENTITIES:
+            case Constants.REMOVE_ALL_RENDER_ENTITIES:
                 _entities.clear();
                 break;
-            case Singleton.REGISTER_TEXTURE: {
+            case Constants.REGISTER_TEXTURE: {
                 String texture = (String)message.getMessageData();
                 if (!_textures.containsKey(texture)) {
                     try {
@@ -93,7 +100,7 @@ public class Renderer implements MessageHandler {
                 }
                 break;
             }
-            case Singleton.SET_MAIN_CAMERA:
+            case Constants.SET_MAIN_CAMERA:
                 _worldCamera = (Camera)message.getMessageData();
                 break;
 
@@ -104,14 +111,23 @@ public class Renderer implements MessageHandler {
     {
         if (_updatingEntities) return; // Not done with collisions/movement simulation
         _collision.setDeltaSeconds(deltaSeconds);
+        // Dispatch all collision events
+        HashMap<Actor, HashSet<Actor>> collisions = _collision.getPreviousCollisions();
+        for (Map.Entry<Actor, HashSet<Actor>> entry : collisions.entrySet()) {
+            HashSet<Actor> actors = entry.getValue();
+            if (actors.size() > 0) {
+                Actor a = entry.getKey();
+                a.onActorOverlapped(a, actors);
+                HashSet<CollisionEventCallback> callbacks = a.getCollisionEventCallbacks();
+                for (CollisionEventCallback callback : callbacks) callback.onActorOverlapped(a, actors);
+            }
+        }
         // Clear the screen
         _gc.setFill(Color.WHITE);
         _gc.fillRect(0, 0,
-                Engine.getConsoleVariables().find(Singleton.SCR_WIDTH).getcvarAsFloat(),
-                Engine.getConsoleVariables().find(Singleton.SCR_HEIGHT).getcvarAsFloat());
+                Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsFloat(),
+                Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsFloat());
 
-        // Reorder scene as needed so things are drawn in the proper order
-        _determineDrawOrder();
         // What values to offset everything in the world by to
         // determine camera-space coordinates
         double xOffset;
@@ -119,6 +135,8 @@ public class Renderer implements MessageHandler {
         Vector3 translate = _worldCamera.getWorldTranslate();
         xOffset = translate.x();
         yOffset = translate.y();
+        int xOffsetInt = (int)xOffset;
+        int yOffsetInt = (int)yOffset;
         // Now transform everyone to camera space and determine if they
         // are visible and need to be drawn
         double screenX;
@@ -127,8 +145,27 @@ public class Renderer implements MessageHandler {
         double width;
         double height;
         Vector3 location;
-        int screenWidth = Engine.getConsoleVariables().find(Singleton.SCR_WIDTH).getcvarAsInt();
-        int screenHeight = Engine.getConsoleVariables().find(Singleton.SCR_HEIGHT).getcvarAsInt();
+        int screenWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsInt();
+        int screenHeight = Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsInt();
+        _graphicsEntities.clear();
+        for (GraphicsEntity entity : _entities) {
+            location = entity.getTranslationVec();
+            boolean isStatic = entity.isStaticActor();
+            double origX = location.x();
+            double origY = location.y();
+            double z = location.z();
+            screenX = origX + (isStatic ? 0 : xOffset);
+            screenY = origY + (isStatic ? 0 : yOffset);
+            location.setXYZ(screenX, screenY, z);
+            _graphicsEntities.add(entity);
+            entity.setScreenVisibility(false); // Assume false for now
+            location.setXYZ(origX, origY, z);
+        }
+        // Reorder scene as needed so things are drawn in the proper order
+        //HashSet<GraphicsEntity> actors = _graphicsEntities.getAllActors();
+        HashSet<GraphicsEntity> actors = _graphicsEntities.getActorsWithinArea(0, 0, screenWidth, screenHeight);
+        //System.out.println("Before: " + _entities.size() + "; after: " + actors.size());
+        _determineDrawOrder(actors);
         for (Map.Entry<Integer, ArrayList<GraphicsEntity>> entry : _drawOrder.entrySet())
         {
             for (GraphicsEntity entity : entry.getValue())
@@ -140,32 +177,34 @@ public class Renderer implements MessageHandler {
                 width = entity.getWidth();
                 height = entity.getHeight();
                 rotation = entity.getRotation();
+                /**
                 if (screenX + width < 0 || screenX > screenWidth ||
                         screenY + height < 0 || screenY > screenHeight)
                 {
                     entity.setScreenVisibility(false);
                 }
+                 */
+                //else
+                //{
+                entity.setScreenVisibility(true);
+                _rotation.setAngle(rotation);
+                _rotation.setPivotX(screenX + width / 2);
+                _rotation.setPivotY(screenY + height / 2);
+                // See https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
+                _gc.setTransform(_rotation.getMxx(), _rotation.getMyx(),
+                            _rotation.getMxy(), _rotation.getMyy(), _rotation.getTx(), _rotation.getTy());
+                if (_textures.containsKey(entity.getTexture()))
+                {
+                    ImageView imageView = _textures.get(entity.getTexture());
+                    _gc.drawImage(imageView.getImage(), screenX, screenY, width, height);
+                }
                 else
                 {
-                    entity.setScreenVisibility(true);
-                    _rotation.setAngle(rotation);
-                    _rotation.setPivotX(screenX + width / 2);
-                    _rotation.setPivotY(screenY + height / 2);
-                    // See https://stackoverflow.com/questions/18260421/how-to-draw-image-rotated-on-javafx-canvas
-                    _gc.setTransform(_rotation.getMxx(), _rotation.getMyx(),
-                            _rotation.getMxy(), _rotation.getMyy(), _rotation.getTx(), _rotation.getTy());
-                    if (_textures.containsKey(entity.getTexture()))
-                    {
-                        ImageView imageView = _textures.get(entity.getTexture());
-                        _gc.drawImage(imageView.getImage(), screenX, screenY, width, height);
-                    }
-                    else
-                    {
-                        _gc.setFill(entity.getColor());
-                        entity.render(_gc, screenX, screenY);
-                        //_gc.fillRect(screenX, screenY, width, height);
-                    }
+                    _gc.setFill(entity.getColor());
+                    entity.render(_gc, screenX, screenY);
+                    //_gc.fillRect(screenX, screenY, width, height);
                 }
+                //}
             }
         }
         _renderedScene = true;
@@ -175,10 +214,10 @@ public class Renderer implements MessageHandler {
     private void _updateEntities(double deltaSeconds)
     {
         _rootSet.clear();
-        int worldStartX = Engine.getConsoleVariables().find(Singleton.WORLD_START_X).getcvarAsInt();
-        int worldStartY = Engine.getConsoleVariables().find(Singleton.WORLD_START_Y).getcvarAsInt();
-        int worldWidth = Engine.getConsoleVariables().find(Singleton.WORLD_WIDTH).getcvarAsInt();
-        int worldHeight = Engine.getConsoleVariables().find(Singleton.WORLD_HEIGHT).getcvarAsInt();
+        int worldStartX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+        int worldStartY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+        int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+        int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         // Account for the fact that worldStartX/worldStartY may not simply be 0
         worldWidth += worldStartX;
         worldHeight += worldStartY;
@@ -237,15 +276,20 @@ public class Renderer implements MessageHandler {
     }
     */
 
-    private void _determineDrawOrder()
+    private void _determineDrawOrder(HashSet<GraphicsEntity> graphicsEntities)
     {
         for (Map.Entry<Integer, ArrayList<GraphicsEntity>> entry : _drawOrder.entrySet())
         {
             entry.getValue().clear();
         }
 
-        for (GraphicsEntity entity : _entities)
+        //QuadTree<ActorGraph> actors = _collision.getLatestQuadTree();
+        //for (GraphicsEntity entity : _entities)
+        for (ActorGraph actor : graphicsEntities)
         {
+            GraphicsEntity entity;
+            if (actor instanceof GraphicsEntity) entity = (GraphicsEntity)actor;
+            else continue;
             int depth = (int)entity.getDepth() * -1; // * -1 because if the depth is negative it needs to come
             // later in the list so that it gets drawn last and
             // will then appear to be on top of other objects

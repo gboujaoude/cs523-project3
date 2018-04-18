@@ -124,18 +124,18 @@ public class Window implements MessageHandler, PulseEntity {
     public GraphicsContext init(Stage stage)
     {
         // We want to update frequently to check for resizes, so tell the system to add us as a pulse entity
-        Engine.getMessagePump().sendMessage(new Message(Singleton.ADD_PULSE_ENTITY, this));
-        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.SCR_FULLSCREEN, Boolean.toString(_isFullscreen)));
-        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.SCR_WIDTH, Integer.toString(_width)));
-        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.SCR_HEIGHT, Integer.toString(_height)));
-        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.SCR_RESIZEABLE, Boolean.toString(_resizeable)));
-        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Singleton.SCR_TITLE, _title));
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
+        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_FULLSCREEN, Boolean.toString(_isFullscreen)));
+        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_WIDTH, Integer.toString(_width)));
+        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_HEIGHT, Integer.toString(_height)));
+        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_RESIZEABLE, Boolean.toString(_resizeable)));
+        Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_TITLE, _title));
         ConsoleVariables cvars = Engine.getConsoleVariables();
-        _isFullscreen = Boolean.parseBoolean(cvars.find(Singleton.SCR_FULLSCREEN).getcvarValue());
-        _width = Integer.parseInt(cvars.find(Singleton.SCR_WIDTH).getcvarValue());
-        _height = Integer.parseInt(cvars.find(Singleton.SCR_HEIGHT).getcvarValue());
-        _resizeable = Boolean.parseBoolean(cvars.find(Singleton.SCR_RESIZEABLE).getcvarValue());
-        _title = cvars.find(Singleton.SCR_TITLE).getcvarValue();
+        _isFullscreen = Boolean.parseBoolean(cvars.find(Constants.SCR_FULLSCREEN).getcvarValue());
+        _width = Integer.parseInt(cvars.find(Constants.SCR_WIDTH).getcvarValue());
+        _height = Integer.parseInt(cvars.find(Constants.SCR_HEIGHT).getcvarValue());
+        _resizeable = Boolean.parseBoolean(cvars.find(Constants.SCR_RESIZEABLE).getcvarValue());
+        _title = cvars.find(Constants.SCR_TITLE).getcvarValue();
         _mouseInputComponents = new HashSet<>();
         _mouseInputManager = new InternalMouseInputManager();
 
@@ -146,13 +146,13 @@ public class Window implements MessageHandler, PulseEntity {
         // Signal interest
         Engine.getMessagePump().signalInterest(W_REGISTER_MOUSE_INPUT_COMPONENT, this);
         Engine.getMessagePump().signalInterest(W_DEREGISTER_MOUSE_INPUT_COMPONENT, this);
-        Engine.getMessagePump().signalInterest(Singleton.SET_SCR_WIDTH, this);
-        Engine.getMessagePump().signalInterest(Singleton.SET_SCR_HEIGHT, this);
-        Engine.getMessagePump().signalInterest(Singleton.SET_FULLSCREEN, this);
-        Engine.getMessagePump().signalInterest(Singleton.ADD_UI_ELEMENT, this);
-        Engine.getMessagePump().signalInterest(Singleton.REMOVE_UI_ELEMENT, this);
-        Engine.getMessagePump().signalInterest(Singleton.CONSOLE_VARIABLE_CHANGED, this);
-        Engine.getMessagePump().signalInterest(Singleton.REMOVE_ALL_UI_ELEMENTS, this);
+        Engine.getMessagePump().signalInterest(Constants.SET_SCR_WIDTH, this);
+        Engine.getMessagePump().signalInterest(Constants.SET_SCR_HEIGHT, this);
+        Engine.getMessagePump().signalInterest(Constants.SET_FULLSCREEN, this);
+        Engine.getMessagePump().signalInterest(Constants.ADD_UI_ELEMENT, this);
+        Engine.getMessagePump().signalInterest(Constants.REMOVE_UI_ELEMENT, this);
+        Engine.getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
+        Engine.getMessagePump().signalInterest(Constants.REMOVE_ALL_UI_ELEMENTS, this);
         stage.setFullScreen(_isFullscreen);
         stage.setResizable(_resizeable);
         if (_isFullscreen)
@@ -184,37 +184,37 @@ public class Window implements MessageHandler, PulseEntity {
     public void handleMessage(Message message) {
         switch(message.getMessageName())
         {
-            case Singleton.CONSOLE_VARIABLE_CHANGED:
+            case Constants.CONSOLE_VARIABLE_CHANGED:
             {
                 ConsoleVariable cvar = (ConsoleVariable)message.getMessageData();
-                if (cvar.getcvarName().equals(Singleton.SCR_WIDTH) || cvar.getcvarName().equals(Singleton.SCR_HEIGHT))
+                if (cvar.getcvarName().equals(Constants.SCR_WIDTH) || cvar.getcvarName().equals(Constants.SCR_HEIGHT))
                 {
                     _width = (int) _jfxScene.getWidth();
                     _height = (int) _jfxScene.getHeight();
                     _canvas.setWidth(_width);
                     _canvas.setHeight(_height);
                 }
-                else if (cvar.getcvarName().equals(Singleton.SCR_FULLSCREEN))
+                else if (cvar.getcvarName().equals(Constants.SCR_FULLSCREEN))
                 {
                     _stage.setFullScreen(_isFullscreen);
                 }
-                else if (cvar.getcvarName().equals(Singleton.SCR_RESIZEABLE))
+                else if (cvar.getcvarName().equals(Constants.SCR_RESIZEABLE))
                 {
                     _stage.setResizable(true);
                 }
                 break;
             }
-            case Singleton.ADD_UI_ELEMENT:
+            case Constants.ADD_UI_ELEMENT:
             {
                 _stack.getChildren().add((Node)message.getMessageData());
                 break;
             }
-            case Singleton.REMOVE_UI_ELEMENT:
+            case Constants.REMOVE_UI_ELEMENT:
             {
                 _stack.getChildren().remove((Node)message.getMessageData());
                 break;
             }
-            case Singleton.REMOVE_ALL_UI_ELEMENTS:
+            case Constants.REMOVE_ALL_UI_ELEMENTS:
             {
                 _stack.getChildren().clear();
                 break;
@@ -237,8 +237,8 @@ public class Window implements MessageHandler, PulseEntity {
     public void pulse(double deltaSeconds) {
         if (_width != (int)_jfxScene.getWidth() || _height != (int)_jfxScene.getHeight())
         {
-            Engine.getConsoleVariables().find(Singleton.SCR_WIDTH).setValue(Integer.toString((int)_jfxScene.getWidth()));
-            Engine.getConsoleVariables().find(Singleton.SCR_HEIGHT).setValue(Integer.toString((int)_jfxScene.getHeight()));
+            Engine.getConsoleVariables().find(Constants.SCR_WIDTH).setValue(Integer.toString((int)_jfxScene.getWidth()));
+            Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).setValue(Integer.toString((int)_jfxScene.getHeight()));
         }
         // Process mouse input
         MouseSnapshot snapshot = _mouseInputManager.snapshot();

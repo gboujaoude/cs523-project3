@@ -2,6 +2,8 @@ package engine;
 
 import javafx.scene.canvas.GraphicsContext;
 
+import java.util.HashSet;
+
 /**
  * Simple class for representing a rectangle, optionally textured.
  */
@@ -14,5 +16,10 @@ public class Rectangle2D extends GraphicsEntity {
     @Override
     public void render(GraphicsContext gc, double x, double y) {
         gc.fillRect(x, y, getWidth(), getHeight());
+    }
+
+    @Override
+    public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
+
     }
 }

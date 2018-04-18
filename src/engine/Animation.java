@@ -39,8 +39,8 @@ public class Animation implements MessageHandler {
     {
         _managedEntity = entity;
         setAnimationRate(rateOfChange);
-        Engine.getMessagePump().signalInterest(Singleton.CONSOLE_VARIABLE_CHANGED, this);
-        _animate = Boolean.parseBoolean(Engine.getConsoleVariables().find(Singleton.CALCULATE_MOVEMENT).getcvarValue());
+        Engine.getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
+        _animate = Boolean.parseBoolean(Engine.getConsoleVariables().find(Constants.CALCULATE_MOVEMENT).getcvarValue());
     }
 
     /**
@@ -108,7 +108,7 @@ public class Animation implements MessageHandler {
             _animationIndexHistories.put(category, 0);
         }
         _animationCategories.get(category).add(file);
-        Engine.getMessagePump().sendMessage(new Message(Singleton.REGISTER_TEXTURE, file));
+        Engine.getMessagePump().sendMessage(new Message(Constants.REGISTER_TEXTURE, file));
         // If we do not have a current animation sequence, set it to the recently
         // added category and make sure to set the entity's texture
         if (_currentAnimationSequence == null)
@@ -122,12 +122,12 @@ public class Animation implements MessageHandler {
     public void handleMessage(Message message) {
         switch (message.getMessageName())
         {
-            case Singleton.CONSOLE_VARIABLE_CHANGED:
+            case Constants.CONSOLE_VARIABLE_CHANGED:
             {
                 ConsoleVariable cvar = (ConsoleVariable)message.getMessageData();
-                if (cvar.getcvarName().equals(Singleton.CALCULATE_MOVEMENT))
+                if (cvar.getcvarName().equals(Constants.CALCULATE_MOVEMENT))
                 {
-                    _animate = Boolean.parseBoolean(Engine.getConsoleVariables().find(Singleton.CALCULATE_MOVEMENT).getcvarValue());
+                    _animate = Boolean.parseBoolean(Engine.getConsoleVariables().find(Constants.CALCULATE_MOVEMENT).getcvarValue());
                 }
             }
         }

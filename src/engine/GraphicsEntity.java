@@ -30,7 +30,7 @@ public abstract class GraphicsEntity extends ActorGraph {
      */
     public void addToWorld()
     {
-        Engine.getMessagePump().sendMessage(new Message(Singleton.ADD_GRAPHICS_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_GRAPHICS_ENTITY, this));
     }
 
     /**
@@ -39,7 +39,7 @@ public abstract class GraphicsEntity extends ActorGraph {
      */
     public void removeFromWorld()
     {
-        Engine.getMessagePump().sendMessage(new Message(Singleton.ADD_GRAPHICS_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_GRAPHICS_ENTITY, this));
     }
 
     /**
@@ -51,12 +51,13 @@ public abstract class GraphicsEntity extends ActorGraph {
      * @param x x-location for this entity (renderer likely recalculated your location, so use this)
      * @param y y-location for this entity (renderer likely recalculated your location, so use this)
      */
-    public abstract void render(GraphicsContext gc, double x, double y);
+    // package-private
+    abstract void render(GraphicsContext gc, double x, double y);
 
     public void setTexture(String texture)
     {
         _texture = texture;
-        Engine.getMessagePump().sendMessage(new Message(Singleton.REGISTER_TEXTURE, texture));
+        Engine.getMessagePump().sendMessage(new Message(Constants.REGISTER_TEXTURE, texture));
     }
 
     public void setColor(Color color)

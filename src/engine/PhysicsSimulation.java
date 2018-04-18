@@ -2,41 +2,54 @@ package engine;
 
 import engine.math.Vector3;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CollisionDetection implements Task, MessageHandler {
+public class PhysicsSimulation implements Task, MessageHandler {
     private HashSet<ActorGraph> _actors;
     private HashSet<ActorGraph> _rootSet;
+    private QuadTree<ActorGraph> _actorTree;
     private AtomicReference<Double> _deltaSeconds = new AtomicReference<>(0.0);
+    private HashMap<Actor, HashSet<Actor>> _collisions;
 
     public void init() {
-        Engine.getMessagePump().signalInterest(Singleton.ADD_GRAPHICS_ENTITY, this);
-        Engine.getMessagePump().signalInterest(Singleton.REMOVE_GRAPHICS_ENTITY, this);
+        Engine.getMessagePump().signalInterest(Constants.ADD_GRAPHICS_ENTITY, this);
+        Engine.getMessagePump().signalInterest(Constants.REMOVE_GRAPHICS_ENTITY, this);
         _actors = new HashSet<>();
         _rootSet = new HashSet<>();
+        _collisions = new HashMap<>(100);
+        int worldStartX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+        int worldStartY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+        int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+        int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
+        int worldWidthHeight = worldWidth > worldHeight ? worldWidth : worldHeight;
+        _actorTree = new QuadTree<>(worldStartX, worldStartY, worldWidthHeight, 10, 100);
     }
 
     public void setDeltaSeconds(double deltaSeconds) {
         _deltaSeconds.set(deltaSeconds);
     }
 
+    // Returns the collisions that resulted during the previous physics simulation update
+    public HashMap<Actor, HashSet<Actor>> getPreviousCollisions() {
+        return _collisions;
+    }
+
     @Override
     public void execute() {
         _updateEntities(_deltaSeconds.get());
+        _checkForCollisions();
     }
 
     @Override
     public void handleMessage(Message message) {
         switch(message.getMessageName()) {
-            case Singleton.ADD_GRAPHICS_ENTITY:
+            case Constants.ADD_GRAPHICS_ENTITY:
             {
                 _actors.add((ActorGraph)message.getMessageData());
                 break;
             }
-            case Singleton.REMOVE_GRAPHICS_ENTITY:
+            case Constants.REMOVE_GRAPHICS_ENTITY:
             {
                 Object obj = message.getMessageData();
                 if (obj == null) return;
@@ -49,10 +62,11 @@ public class CollisionDetection implements Task, MessageHandler {
     private void _updateEntities(double deltaSeconds)
     {
         _rootSet.clear();
-        int worldStartX = Engine.getConsoleVariables().find(Singleton.WORLD_START_X).getcvarAsInt();
-        int worldStartY = Engine.getConsoleVariables().find(Singleton.WORLD_START_Y).getcvarAsInt();
-        int worldWidth = Engine.getConsoleVariables().find(Singleton.WORLD_WIDTH).getcvarAsInt();
-        int worldHeight = Engine.getConsoleVariables().find(Singleton.WORLD_HEIGHT).getcvarAsInt();
+        _actorTree.clear();
+        int worldStartX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+        int worldStartY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+        int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+        int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         // Account for the fact that worldStartX/worldStartY may not simply be 0
         worldWidth += worldStartX;
         worldHeight += worldStartY;
@@ -78,6 +92,7 @@ public class CollisionDetection implements Task, MessageHandler {
                     depth);
             _checkAndCorrectOutOfBounds(graph, worldStartX, worldStartY, worldWidth, worldHeight);
             _rootSet.add(graph);
+            _actorTree.add(graph);
             for (ActorGraph attached : graph.getActors())
             {
                 _updateGraphEntitiesRecursive(attached, worldStartX, worldStartY, worldWidth,
@@ -100,6 +115,7 @@ public class CollisionDetection implements Task, MessageHandler {
                     actor.getLocationY() + deltaSpeedY * (actor.shouldConstrainYMovement() ? 0 : 1),
                     actor.getDepth());
             _checkAndCorrectOutOfBounds(actor, worldStartX, worldStartY, worldWidth, worldHeight);
+            _actorTree.add(actor);
         }
         _rootSet.add(actor);
         // Process its attached actors regardless
@@ -124,5 +140,52 @@ public class CollisionDetection implements Task, MessageHandler {
         if (y + height < worldStartY) y = worldHeight - height;
         else if (y > worldHeight) y = worldStartY;
         translation.setXYZ(x, y, 1);
+    }
+
+    private void _checkForCollisions() {
+        Iterator<HashSet<ActorGraph>> iterator = _actorTree.getLeafIterator();
+        // Clear out the collisions from the previous iteration
+        for (Map.Entry<Actor, HashSet<Actor>> entry : _collisions.entrySet()) entry.getValue().clear();
+        while (iterator.hasNext()) {
+            HashSet<ActorGraph> set = iterator.next();
+            for (ActorGraph outer : set) {
+                HashSet<Actor> outerCollisions = _collisions.get(outer);
+                if (outerCollisions == null) {
+                    outerCollisions = new HashSet<>();
+                    _collisions.put(outer, outerCollisions);
+                }
+                double depth = outer.getDepth();
+                for (ActorGraph inner : set) {
+                    if (outer == inner || depth != inner.getDepth()) continue;
+                    HashSet<Actor> innerCollisions = _collisions.get(inner);
+                    if (innerCollisions == null) {
+                        innerCollisions = new HashSet<>();
+                        _collisions.put(inner, innerCollisions);
+                    }
+                    if (_collided(outer, inner)) {
+                        outerCollisions.add(inner);
+                        innerCollisions.add(outer);
+                        //System.out.println(outer + " collided with " + inner);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean _collided(ActorGraph first, ActorGraph second) {
+        double x1 = first.getLocationX();
+        double y1 = first.getLocationY();
+        double endX1 = x1 + first.getWidth();
+        double endY1 = y1 + first.getHeight();
+
+        double x2 = second.getLocationX();
+        double y2 = second.getLocationY();
+        double endX2 = x2 + second.getWidth();
+        double endY2 = y2 + second.getHeight();
+
+        //(_startX > edgeX) || (x > _edgeX) || (_startY > edgeY) || (y > _edgeY)
+        // If any of the following are true, then we are not colliding, and if
+        // not we assume a collision has taken place
+        return !((x1 > endX2) || (x2 > endX1) || (y1 > endY2) || (y2 > endY1));
     }
 }

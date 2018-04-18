@@ -43,7 +43,7 @@ public class Pulsar implements PulseEntity {
     {
         if (_started) return; // Don't start twice in a row
         _started = true;
-        Engine.getMessagePump().sendMessage(new Message(Singleton.ADD_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
     }
 
     /**
@@ -53,7 +53,7 @@ public class Pulsar implements PulseEntity {
     {
         if (!_started) return; // Don't stop if we haven't started
         _started = false;
-        Engine.getMessagePump().sendMessage(new Message(Singleton.REMOVE_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
     }
 
     // Updates the pulsar
