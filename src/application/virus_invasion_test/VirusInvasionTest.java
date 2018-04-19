@@ -17,7 +17,7 @@ public class VirusInvasionTest implements ApplicationEntryPoint {
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         Random rng = new Random();
-        for (int i = 0; i < 150; ++i) {
+        for (int i = 0; i < 300; ++i) {
             new SittingDuckCell(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight);
         }
     }
