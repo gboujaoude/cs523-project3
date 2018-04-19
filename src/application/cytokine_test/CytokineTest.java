@@ -21,7 +21,7 @@ public class CytokineTest implements ApplicationEntryPoint {
         new BCell(worldWidth / 2, worldHeight / 2).addToWorld();
         Random rng = new Random();
         // Create 100 cytokines
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 250; ++i) {
             new Cytokine(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
         }
     }

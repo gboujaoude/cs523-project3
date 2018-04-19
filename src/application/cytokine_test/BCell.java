@@ -26,6 +26,7 @@ public class BCell extends Circle2D implements PulseEntity {
     private double _elapsedSec = 0.0;
     private double _maxSecBeforeMovementChange = 5.0; // Change direction every x seconds
     private double _keepGoingInSameDirectionProb = 0.5;
+    private double _fatnessOffset = 5;
 
     public BCell(double locationX, double locationY) {
         super(locationX, locationY, 75, 75, 1);
@@ -41,6 +42,7 @@ public class BCell extends Circle2D implements PulseEntity {
             if (actor instanceof Cytokine) {
                 System.out.println("BCell intercepted Cytokine - analyzing");
                 actor.removeFromWorld();
+                //setWidthHeight(getWidth() + _fatnessOffset, getHeight() + _fatnessOffset);
             }
         }
     }
