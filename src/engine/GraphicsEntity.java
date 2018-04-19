@@ -39,7 +39,7 @@ public abstract class GraphicsEntity extends ActorGraph {
      */
     public void removeFromWorld()
     {
-        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_GRAPHICS_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_GRAPHICS_ENTITY, this));
     }
 
     /**

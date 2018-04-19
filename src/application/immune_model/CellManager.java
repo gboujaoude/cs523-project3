@@ -1,4 +1,4 @@
-package application;
+package application.immune_model;
 
 import engine.Engine;
 import engine.PulseEntity;

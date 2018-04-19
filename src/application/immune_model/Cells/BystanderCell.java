@@ -1,4 +1,4 @@
-package application.Cells;
+package application.immune_model.Cells;
 
 import engine.Circle2D;
 import javafx.scene.canvas.GraphicsContext;

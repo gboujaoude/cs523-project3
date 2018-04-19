@@ -1,7 +1,6 @@
-package application;
+package application.immune_model;
 
 import engine.*;
-import javafx.application.Platform;
 
 public class ImmuneSystemModelApplication implements ApplicationEntryPoint{
 
