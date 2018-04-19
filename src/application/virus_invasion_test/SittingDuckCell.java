@@ -44,7 +44,7 @@ public class SittingDuckCell extends Circle2D implements PulseEntity {
                 _elapsedSec = 0.0;
                 if (_viruses.size() >= _maxViruses) {
                     for (Virus virus : _viruses) virus.addToWorld();
-                    _virus.addToWorld();
+                    Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
                     removeFromWorld();
                 }
             }
