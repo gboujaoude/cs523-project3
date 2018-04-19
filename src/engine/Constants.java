@@ -51,6 +51,11 @@ public class Constants {
     // Adds or removes a logic entity
     public static final String ADD_LOGIC_ENTITY = "add_logic_entity";
     public static final String REMOVE_LOGIC_ENTITY = "remove_logic_entity";
+    // Increments the camera's x offset, meaning the data should be a double
+    public static final String INCREMENT_CAMERA_X_OFFSET = "increment_camera_x_offset";
+    public static final String INCREMENT_CAMERA_Y_OFFSET = "increment_camera_y_offset";
+    // Resets the camera's x and y offset back to their defaults
+    public static final String RESET_CAMERA_XY_OFFSET = "reset_camera_xy_offset";
 
     /**
      * The following are console variables that will be registered at startup

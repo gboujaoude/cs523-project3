@@ -427,6 +427,9 @@ public class Engine implements PulseEntity, MessageHandler {
         getMessagePump().registerMessage(new Message(Constants.PERFORM_SOFT_RESET));
         getMessagePump().registerMessage(new Message(Constants.ADD_LOGIC_ENTITY));
         getMessagePump().registerMessage(new Message(Constants.REMOVE_LOGIC_ENTITY));
+        getMessagePump().registerMessage(new Message(Constants.INCREMENT_CAMERA_X_OFFSET));
+        getMessagePump().registerMessage(new Message(Constants.INCREMENT_CAMERA_Y_OFFSET));
+        getMessagePump().registerMessage(new Message(Constants.RESET_CAMERA_XY_OFFSET));
     }
 
     /**

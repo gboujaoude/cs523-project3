@@ -22,6 +22,8 @@ public class Camera {
     private Vector3 _editedEntityLocation = new Vector3(0.0);
     private double _widthScalar = 2.5;
     private double _heightScalar = 3.0;
+    private double _manualOffsetX = 0.0; // In case something like the mouse is controlling this
+    private double _manualOffsetY = 0.0; // In case something like the mouse is controlling this
 
     /**
      * Returns the entity that this camera was attached to
@@ -37,6 +39,19 @@ public class Camera {
     public void attachToEntity(Actor entity)
     {
         _attachedTo = entity;
+    }
+
+    public void incrementManualOffsetX(double amount) {
+        _manualOffsetX += amount;
+    }
+
+    public void incrementManualOffsetY(double amount) {
+        _manualOffsetY += amount;
+    }
+
+    public void setManualOffsetXY(double xAmount, double yAmount) {
+        _manualOffsetX = xAmount;
+        _manualOffsetY = yAmount;
     }
 
     /**
@@ -77,7 +92,7 @@ public class Camera {
     {
         if (_attachedTo == null)
         {
-            _worldTranslate.setXYZ(0.0, 0.0, 0.0);
+            _worldTranslate.setXYZ(_manualOffsetX, _manualOffsetY, 0.0);
             return _worldTranslate;
         }
         double scrWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsInt();
@@ -94,8 +109,8 @@ public class Camera {
         double locY = _attachedTo.getLocationY();
         //double modLocX = locX;// < 0 ? -locX : locX;
         //double modLocY = locY;// < 0 ? -locY : locY;
-        double newLocX = locX - scrWidthModified;
-        double newLocY = locY - scrHeightModified;
+        double newLocX = locX - scrWidthModified - _manualOffsetX;
+        double newLocY = locY - scrHeightModified - _manualOffsetY;
         if (newLocX > (worldEndX - scrWidth)) newLocX = worldEndX - scrWidth;
         else if (newLocX < worldStartX) newLocX = worldStartX;
         //if (newLocY > (worldStartY - scrHeight)) newLocY = worldStartY - scrHeight;

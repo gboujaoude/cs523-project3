@@ -169,7 +169,13 @@ public class MessagePump {
             LinkedList<MessageHandler> interested = _registeredHandlers.get(msg);
             for (MessageHandler handler : interested)
             {
-                handler.handleMessage(msg);
+                try {
+                    handler.handleMessage(msg);
+                }
+                catch (Exception e) {
+                    System.err.println("Error in message dispatch routine -> continuing");
+                    e.printStackTrace();
+                }
             }
         }
     }

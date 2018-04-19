@@ -60,6 +60,9 @@ public class Renderer implements MessageHandler {
         Engine.getMessagePump().signalInterest(Engine.R_RENDER_SCENE, this);
         Engine.getMessagePump().signalInterest(Engine.R_UPDATE_ENTITIES, this);
         Engine.getMessagePump().signalInterest(Constants.REMOVE_ALL_RENDER_ENTITIES, this);
+        Engine.getMessagePump().signalInterest(Constants.INCREMENT_CAMERA_X_OFFSET, this);
+        Engine.getMessagePump().signalInterest(Constants.INCREMENT_CAMERA_Y_OFFSET, this);
+        Engine.getMessagePump().signalInterest(Constants.RESET_CAMERA_XY_OFFSET, this);
     }
 
     @Override
@@ -102,6 +105,15 @@ public class Renderer implements MessageHandler {
             }
             case Constants.SET_MAIN_CAMERA:
                 _worldCamera = (Camera)message.getMessageData();
+                break;
+            case Constants.INCREMENT_CAMERA_X_OFFSET:
+                _worldCamera.incrementManualOffsetX((Double)message.getMessageData());
+                break;
+            case Constants.INCREMENT_CAMERA_Y_OFFSET:
+                _worldCamera.incrementManualOffsetY((Double)message.getMessageData());
+                break;
+            case Constants.RESET_CAMERA_XY_OFFSET:
+                _worldCamera.setManualOffsetXY(0.0, 0.0);
                 break;
 
         }

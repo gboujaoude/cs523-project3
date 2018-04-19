@@ -34,10 +34,6 @@ public abstract class Actor implements CollisionEventCallback {
     private boolean _constrainYMovement = false;
     private HashSet<CollisionEventCallback> _collisionCallbacks = new HashSet<>();
 
-    /**
-     * This method allows you to add a function that will be called whenever this actor overlaps
-     * another actor.
-     */
     public void attachCollisionCallback(CollisionEventCallback callback) {
         _collisionCallbacks.add(callback);
     }
