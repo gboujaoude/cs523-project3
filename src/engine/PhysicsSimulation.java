@@ -3,10 +3,12 @@ package engine;
 import engine.math.Vector3;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PhysicsSimulation implements Task, MessageHandler {
-    private HashSet<ActorGraph> _actors;
+    private static final Object _obj = new Object();
+    private ConcurrentHashMap<ActorGraph, Object> _actors;
     private HashSet<ActorGraph> _rootSet;
     private QuadTree<ActorGraph> _actorTree;
     private AtomicReference<Double> _deltaSeconds = new AtomicReference<>(0.0);
@@ -15,7 +17,7 @@ public class PhysicsSimulation implements Task, MessageHandler {
     public void init() {
         Engine.getMessagePump().signalInterest(Constants.ADD_GRAPHICS_ENTITY, this);
         Engine.getMessagePump().signalInterest(Constants.REMOVE_GRAPHICS_ENTITY, this);
-        _actors = new HashSet<>();
+        _actors = new ConcurrentHashMap<>();
         _rootSet = new HashSet<>();
         _collisions = new HashMap<>(100);
         int worldStartX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
@@ -46,7 +48,7 @@ public class PhysicsSimulation implements Task, MessageHandler {
         switch(message.getMessageName()) {
             case Constants.ADD_GRAPHICS_ENTITY:
             {
-                _actors.add((ActorGraph)message.getMessageData());
+                _actors.putIfAbsent((ActorGraph)message.getMessageData(), _obj);
                 break;
             }
             case Constants.REMOVE_GRAPHICS_ENTITY:
@@ -72,8 +74,9 @@ public class PhysicsSimulation implements Task, MessageHandler {
         worldHeight += worldStartY;
         // Actors form a graph so we need to start at the roots and move down to ensure
         // that attached nodes inherit the base actor's speed and acceleration
-        for (ActorGraph graph : _actors)
+        for (Map.Entry<ActorGraph, Object> graphEntry : _actors.entrySet())
         {
+            ActorGraph graph = graphEntry.getKey();
             if (_rootSet.contains(graph)) continue; // Already processed this actor and its attached actors
             if (graph.isAttached()) continue; // Will be processed later
             Vector3 speed = graph.getSpeedVec();
