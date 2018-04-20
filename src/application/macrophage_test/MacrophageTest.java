@@ -16,6 +16,7 @@ import java.util.Random;
 public class MacrophageTest implements ApplicationEntryPoint {
     @Override
     public void init() {
+        Engine.getConsoleVariables().loadConfigFile("src/application/macrophage_test/macrophage_test.cfg");
         // Add the camera first
         new CameraController().enableMouseInputComponent();
         // Get the world width/height which are separate from the screen width/height

@@ -14,12 +14,13 @@ import java.util.Random;
 public class VirusInvasionTest implements ApplicationEntryPoint {
     @Override
     public void init() {
+        Engine.getConsoleVariables().loadConfigFile("src/application/virus_invasion_test/virus_invasion_test.cfg");
         new CameraController().enableMouseInputComponent();
         new Virus(0, 0).addToWorld();
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         Random rng = new Random();
-        Quadrant quadrant = QuadrantBuilder.makeQuadrant(0,10);
+        Quadrant quadrant = QuadrantBuilder.makeQuadrant(0,100);
         for (int i = 0; i < 300; ++i) {
             new SittingDuckCell(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY());
         }
