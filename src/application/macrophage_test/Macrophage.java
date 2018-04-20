@@ -11,7 +11,7 @@ import java.util.*;
  * out to recruit help from other cells.
  */
 public class Macrophage extends Circle2D  implements PulseEntity {
-    private static final double _speed = 35.0;
+    private static final double _speed = 75;
     private static final double[] _directionX = new double[] {
             0.0, // up
             -_speed, // left
@@ -78,6 +78,14 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     private void _changeDirection() {
         int newDirectionX = _rng.nextInt(_directionX.length);
         int newDirectionY = _rng.nextInt(_directionY.length);
+        double speedX = _directionX[newDirectionX];
+        double speedY = _directionY[newDirectionY];
+        while (speedX == 0 && speedY == 0) {
+            newDirectionX = _rng.nextInt(_directionX.length);
+            newDirectionY = _rng.nextInt(_directionY.length);
+            speedX = _directionX[newDirectionX];
+            speedY = _directionY[newDirectionY];
+        }
         setSpeedXY(_directionX[newDirectionX], _directionY[newDirectionY]);
     }
 

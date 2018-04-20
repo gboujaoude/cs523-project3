@@ -11,7 +11,7 @@ public class MacrophageTestBystanderCell extends Circle2D implements PulseEntity
     private static final Color _unhealthyColor = new Color(255 / 255.0, 110 / 255.0, 88 / 255.0, 1);
     private boolean _isInfected = false;
     private double _elapsedSec = 0.0;
-    private final double _virusProductionRate = 2.0; // Create 1 virus every 2 seconds
+    private final double _virusProductionRate = 3.0; // Create 1 virus every 2 seconds
     private final int _maxViruses = 10;
     private Virus _virus = null;
     private ArrayList<Virus> _viruses = new ArrayList<>();
