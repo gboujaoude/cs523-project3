@@ -20,9 +20,14 @@ public class CytokineTest implements ApplicationEntryPoint {
         // Put the B-cell in the center of the world
         new BCell(worldWidth / 2, worldHeight / 2).addToWorld();
         Random rng = new Random();
+        Cytokine cytokine1 = new Cytokine(50.0, 50.0);
+        Cytokine cytokine2 = new Cytokine(0.0, 0.0);
+        cytokine1.attachActor(cytokine2);
+        cytokine1.addToWorld();
+        cytokine2.addToWorld();
         // Create 100 cytokines
         for (int i = 0; i < 250; ++i) {
-            new Cytokine(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
+            //new Cytokine(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
         }
     }
 

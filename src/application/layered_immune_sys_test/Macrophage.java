@@ -1,4 +1,4 @@
-package application.macrophage_test;
+package application.layered_immune_sys_test;
 
 import engine.*;
 import javafx.scene.paint.Color;
@@ -44,7 +44,7 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     @Override
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         for (Actor actor : collidedWith) {
-            if (actor instanceof MacrophageTestBystanderCell) {
+            if (actor instanceof BystanderCell) {
                 if (!onWhitelist(actor)) {
                     System.out.println("Found infected cell -> destroying");
                     actor.removeFromWorld();
@@ -70,7 +70,7 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     }
 
     private boolean onWhitelist(Actor actor) {
-        MacrophageTestBystanderCell cell = (MacrophageTestBystanderCell) actor;
+        BystanderCell cell = (BystanderCell) actor;
         return !cell.infected();
     }
 

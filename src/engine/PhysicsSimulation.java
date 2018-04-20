@@ -112,7 +112,7 @@ public class PhysicsSimulation implements Task, MessageHandler {
     {
         // Only process this actor if it is part of the world
         // and has not been processed yet
-        if (_actors.contains(actor) && !_rootSet.contains(actor))
+        if (_actors.containsKey(actor) && !_rootSet.contains(actor))
         {
             actor.setLocationXYDepth(actor.getLocationX() + deltaSpeedX * (actor.shouldConstrainXMovement() ? 0 : 1),
                     actor.getLocationY() + deltaSpeedY * (actor.shouldConstrainYMovement() ? 0 : 1),
