@@ -17,6 +17,7 @@ public class PhysicsSimulation implements Task, MessageHandler {
     public void init() {
         Engine.getMessagePump().signalInterest(Constants.ADD_GRAPHICS_ENTITY, this);
         Engine.getMessagePump().signalInterest(Constants.REMOVE_GRAPHICS_ENTITY, this);
+        Engine.getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
         _actors = new ConcurrentHashMap<>();
         _rootSet = new HashSet<>();
         _collisions = new HashMap<>(100);
@@ -57,6 +58,19 @@ public class PhysicsSimulation implements Task, MessageHandler {
                 if (obj == null) return;
                 _actors.remove(obj);
                 break;
+            }
+            case Constants.CONSOLE_VARIABLE_CHANGED:
+            {
+                ConsoleVariable var = (ConsoleVariable)message.getMessageData();
+                int worldX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+                int worldY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+                int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+                int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
+                if (var.getcvarName().equals(Constants.WORLD_WIDTH) || var.getcvarName().equals(Constants.WORLD_HEIGHT)
+                        || var.getcvarName().equals(Constants.WORLD_START_X) || var.getcvarName().equals(Constants.WORLD_START_Y)) {
+                    _actorTree = new QuadTree<>(worldX, worldY, worldWidth > worldHeight ? worldWidth : worldHeight,
+                            10, 100);
+                }
             }
         }
     }

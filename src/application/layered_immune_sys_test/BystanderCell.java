@@ -29,6 +29,7 @@ public class BystanderCell extends Circle2D implements PulseEntity {
         _isInfected = true;
         _virus = virus;
         virus.removeFromWorld();
+        setColor(_unhealthyColor);
     }
 
     public void selfDestruct() {

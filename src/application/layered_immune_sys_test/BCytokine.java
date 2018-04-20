@@ -15,7 +15,7 @@ public class BCytokine extends Circle2D {
         Random rng = new Random();
         setColor(_color);
         final double speed = 100;
-        setSpeedXY(rng.nextDouble() * speed, -rng.nextDouble() * speed);
+        setSpeedXY(rng.nextDouble() * speed, rng.nextDouble() * speed);
         _data.locationX = attackLocationX;
         _data.locationY = attackLocationY;
     }

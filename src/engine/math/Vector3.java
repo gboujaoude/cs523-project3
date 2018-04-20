@@ -71,6 +71,14 @@ public class Vector3 {
         return _z;
     }
 
+    public double magnitude() {
+        return Math.sqrt(_x*_x + _y*_y + _z*_z);
+    }
+
+    public void normalizeThis() {
+        multiplyThis(1 / magnitude());
+    }
+
     /**
      * Multiply the vector by a scalar value
      * @param scalar scalar value

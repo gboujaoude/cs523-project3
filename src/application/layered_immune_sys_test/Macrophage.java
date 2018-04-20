@@ -30,9 +30,10 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     private List<String> _whitelist;
     private static Color _color = new Color(0 / 255.0, 167 / 255.0, 61 / 255.0, 1);
     private int _numVirusesEaten = 0;
+    private boolean _signaledForHelp = false;
 
     public Macrophage(double locationX, double locationY) {
-        super(locationX, locationY, 25, 25, 1);
+        super(locationX, locationY, 30, 30, 1);
         _initializeWhitelist();
         _changeDirection();
         setColor(_color);
@@ -47,7 +48,8 @@ public class Macrophage extends Circle2D  implements PulseEntity {
             if (actor instanceof BystanderCell) {
                 if (!onWhitelist(actor)) {
                     System.out.println("Found infected cell -> destroying");
-                    actor.removeFromWorld();
+                    ((BystanderCell) actor).selfDestruct();
+                    ++_numVirusesEaten;
                 }
             }
             else if (actor instanceof Virus) {
@@ -55,16 +57,28 @@ public class Macrophage extends Circle2D  implements PulseEntity {
                 System.out.println("Found virus -> eating (eaten [" + _numVirusesEaten + "] viruses total)");
                 actor.removeFromWorld();
             }
+            if (_numVirusesEaten > 20 && !_signaledForHelp) {
+                System.out.println("Requesting backup");
+                _signaledForHelp = true;
+            }
         }
     }
 
     @Override
     public void pulse(double deltaSeconds) {
         _elapsedSec += deltaSeconds;
+        if (_elapsedSec > 2 && _signaledForHelp) {
+            for (int i = 0; i < 20; ++i) {
+                new TCytokine(getLocationX(), getLocationY(), getLocationX(), getLocationY()).addToWorld();
+            }
+            _signaledForHelp = false;
+            _numVirusesEaten = 0;
+        }
         // See if it's time to change direction
         if (_elapsedSec >= _maxSecBeforeMovementChange) {
             double chanceToChangeDir = _rng.nextDouble();
-            if (chanceToChangeDir > _keepGoingInSameDirectionProb) _changeDirection();
+            //if (chanceToChangeDir > _keepGoingInSameDirectionProb)
+            _changeDirection();
             _elapsedSec = 0.0; // Reset the timer
         }
     }

@@ -63,6 +63,7 @@ public class Renderer implements MessageHandler {
         Engine.getMessagePump().signalInterest(Constants.INCREMENT_CAMERA_X_OFFSET, this);
         Engine.getMessagePump().signalInterest(Constants.INCREMENT_CAMERA_Y_OFFSET, this);
         Engine.getMessagePump().signalInterest(Constants.RESET_CAMERA_XY_OFFSET, this);
+        Engine.getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
     }
 
     @Override
@@ -115,6 +116,19 @@ public class Renderer implements MessageHandler {
             case Constants.RESET_CAMERA_XY_OFFSET:
                 _worldCamera.setManualOffsetXY(0.0, 0.0);
                 break;
+            case Constants.CONSOLE_VARIABLE_CHANGED:
+            {
+                ConsoleVariable var = (ConsoleVariable)message.getMessageData();
+                if (var.getcvarName().equals(Constants.WORLD_WIDTH) || var.getcvarName().equals(Constants.WORLD_HEIGHT)
+                || var.getcvarName().equals(Constants.WORLD_START_X) || var.getcvarName().equals(Constants.WORLD_START_Y)) {
+                    int worldX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
+                    int worldY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
+                    int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
+                    int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
+                    _graphicsEntities = new QuadTree<>(worldX, worldY, worldWidth > worldHeight ? worldWidth : worldHeight,
+                            10, 100);
+                }
+            }
 
         }
     }

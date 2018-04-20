@@ -15,7 +15,7 @@ public class Virus extends Circle2D {
         setColor(_color);
         Random rng = new Random();
         final double speed = 100;
-        setSpeedXY(rng.nextDouble() * speed, -rng.nextDouble() * speed);
+        setSpeedXY(rng.nextDouble() * speed, rng.nextDouble() * speed);
     }
 
     public Virus(Virus other) {
@@ -23,7 +23,7 @@ public class Virus extends Circle2D {
         setColor(_color);
         Random rng = new Random();
         final double speed = 100;
-        setSpeedXY(rng.nextDouble() * speed, -rng.nextDouble() * speed);
+        setSpeedXY(rng.nextDouble() * speed, rng.nextDouble() * speed);
     }
 
     @Override
