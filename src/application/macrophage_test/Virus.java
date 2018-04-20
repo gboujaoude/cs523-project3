@@ -1,6 +1,6 @@
 package application.macrophage_test;
 
-import application.virus_invasion_test.SittingDuckCell;
+import application.macrophage_test.MacrophageTestBystanderCell;
 import engine.Actor;
 import engine.Circle2D;
 
@@ -29,10 +29,10 @@ public class Virus extends Circle2D {
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         if (_invaded) return;
         for (Actor actor : collidedWith) {
-            if (actor instanceof BystanderCell) {
-                BystanderCell cell = (BystanderCell)actor;
-                if (cell.isInfected()) continue;
-                cell.setInfected(this);
+            if (actor instanceof MacrophageTestBystanderCell) {
+                MacrophageTestBystanderCell cell = (MacrophageTestBystanderCell)actor;
+                if (cell.infected()) continue;
+                cell.infect(this);
                 _invaded = true;
                 break;
             }

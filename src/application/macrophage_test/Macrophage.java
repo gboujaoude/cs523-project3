@@ -1,6 +1,6 @@
 package application.macrophage_test;
 
-import application.macrophage_test.BystanderCell;
+import application.macrophage_test.MacrophageTestBystanderCell;
 import engine.*;
 import javafx.scene.paint.Color;
 
@@ -11,7 +11,7 @@ import java.util.*;
  * out to recruit help from other cells.
  */
 public class Macrophage extends Circle2D  implements PulseEntity {
-    private static final double _speed = 15.0;
+    private static final double _speed = 35.0;
     private static final double[] _directionX = new double[] {
             0.0, // up
             -_speed, // left
@@ -30,9 +30,10 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     private double _keepGoingInSameDirectionProb = 0.5;
     private List<String> _whitelist;
     private static Color _color = new Color(0 / 255.0, 167 / 255.0, 61 / 255.0, 1);
+    private int _numVirusesEaten = 0;
 
     public Macrophage(double locationX, double locationY) {
-        super(locationX, locationY, 75, 75, 1);
+        super(locationX, locationY, 25, 25, 1);
         _initializeWhitelist();
         _changeDirection();
         setColor(_color);
@@ -44,10 +45,16 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     @Override
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         for (Actor actor : collidedWith) {
-            if (actor instanceof BystanderCell) {
+            if (actor instanceof MacrophageTestBystanderCell) {
                 if (!onWhitelist(actor)) {
+                    System.out.println("Found infected cell -> destroying");
                     actor.removeFromWorld();
                 }
+            }
+            else if (actor instanceof Virus) {
+                ++_numVirusesEaten;
+                System.out.println("Found virus -> eating (eaten [" + _numVirusesEaten + "] viruses total)");
+                actor.removeFromWorld();
             }
         }
     }
@@ -64,19 +71,14 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     }
 
     private boolean onWhitelist(Actor actor) {
-        BystanderCell cell = (BystanderCell) actor;
-//        if (_whitelist.contains(cell.getInfectionString().orElse("xyz"))) {
-        if (_whitelist.contains(cell.peekAtVirus())) {
-            System.out.println("here.");
-            return true;
-        }
-        System.out.println("not on whitelist.");
-        return false;
+        MacrophageTestBystanderCell cell = (MacrophageTestBystanderCell) actor;
+        return !cell.infected();
     }
 
     private void _changeDirection() {
-        int newDirection = _rng.nextInt(_directionX.length);
-        setSpeedXY(_directionX[newDirection], _directionY[newDirection]);
+        int newDirectionX = _rng.nextInt(_directionX.length);
+        int newDirectionY = _rng.nextInt(_directionY.length);
+        setSpeedXY(_directionX[newDirectionX], _directionY[newDirectionY]);
     }
 
     private void _initializeWhitelist() {

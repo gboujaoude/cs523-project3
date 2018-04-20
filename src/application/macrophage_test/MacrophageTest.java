@@ -1,7 +1,7 @@
 package application.macrophage_test;
 
 import application.CameraController;
-import application.macrophage_test.BystanderCell;
+import application.macrophage_test.MacrophageTestBystanderCell;
 import engine.ApplicationEntryPoint;
 import engine.Constants;
 import engine.Engine;
@@ -22,12 +22,16 @@ public class MacrophageTest implements ApplicationEntryPoint {
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         // Put the B-cell in the center of the world
-        new Macrophage(worldWidth / 2, worldHeight / 2).addToWorld();
+        //new Macrophage(worldWidth / 2, worldHeight / 2).addToWorld();
         Random rng = new Random();
-        // Create 100 cytokines
-        for (int i = 0; i < 100; ++i) {
-            new BystanderCell(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
+        for (int i = 0; i < 300; ++i) {
+            new MacrophageTestBystanderCell(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
         }
+        // Create 25 macrophages
+        for (int i = 0; i < 75; ++i) {
+            new Macrophage(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
+        }
+        new Virus(0,0).addToWorld();
     }
 
     @Override
