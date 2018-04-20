@@ -24,11 +24,13 @@ public class MacrophageTest implements ApplicationEntryPoint {
         // Put the B-cell in the center of the world
         //new Macrophage(worldWidth / 2, worldHeight / 2).addToWorld();
         Random rng = new Random();
-        for (int i = 0; i < 300; ++i) {
+        int numCells = 4000;
+        for (int i = 0; i < numCells; ++i) {
             new MacrophageTestBystanderCell(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
         }
-        // Create 25 macrophages
-        for (int i = 0; i < 75; ++i) {
+        // Create the macrophages - for every 32 cells there is 1 macrophage
+        int numMacrophages = 500;
+        for (int i = 0; i < numMacrophages; ++i) {
             new Macrophage(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
         }
         new Virus(0,0).addToWorld();
