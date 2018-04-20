@@ -1,6 +1,8 @@
 package application.virus_invasion_test;
 
 import application.CameraController;
+import application.quadrants_test.Quadrant;
+import application.quadrants_test.QuadrantBuilder;
 import engine.ApplicationEntryPoint;
 import engine.Constants;
 import engine.Engine;
@@ -17,8 +19,9 @@ public class VirusInvasionTest implements ApplicationEntryPoint {
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
         Random rng = new Random();
+        Quadrant quadrant = QuadrantBuilder.makeQuadrant(0,10);
         for (int i = 0; i < 300; ++i) {
-            new SittingDuckCell(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight);
+            new SittingDuckCell(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY());
         }
     }
 
