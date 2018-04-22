@@ -1,0 +1,11 @@
+How do B Cells get info about the fight?
+ - “naive B cells require accessory signals that can come either from an armed helper T cell or, in some cases,
+    directly from microbial constituents.” [1]
+
+In this case let's assume that T Cells are the ones activating the B cells.
+
+Need:
+- B Cells just hanging out casually
+- T Cells sending out Cytokines
+- If a B cell is naive, then it will begin to produce antibodies to combat the antigen
+- ? The antibodies are then sent to combat the virus
