@@ -29,12 +29,11 @@ public class BCell extends Circle2D implements PulseEntity {
     private double _maxSecBeforeMovementChange = 5.0; // Change direction every x seconds
     private double _keepGoingInSameDirectionProb = 0.5;
     private double _antibodyRate = 1.0; // 100% chance that will be making antibodies
-    private double _probMatch = .2;
+    private double _probMatch = 2;
     private int _antibodiesLimit = 5;
     private int _memoryCells = 3;
-    private double _fatnessOffset = 5;
     private boolean _isNaive = true; // true means it hasn't made any type of antibody yet
-    private boolean _produceAntibodies = false;
+    private boolean _isActive = false;
     private ArrayList<Antibody> _antibodies = new ArrayList<>();
 
     public BCell(double locationX, double locationY) {
@@ -51,7 +50,25 @@ public class BCell extends Circle2D implements PulseEntity {
 
     private void setActive() {
         _isNaive = false;
-        _produceAntibodies = true;
+        _isActive = true;
+    }
+
+    private void releaseAntibodies() {
+        for (Antibody ab : _antibodies) {
+            ab.addToWorld();
+        }
+        produceMemoryCells();
+        removeFromWorld();
+    }
+
+    /**
+     * B cells produce only one kind of antibody. In this case we simulate this match
+     * by rolling a dice.
+     * @return
+     */
+    private boolean matchesPeptides() {
+        if(_rng.nextDouble() < _probMatch) return true;
+        return false;
     }
 
     // This will be called when we collide with any other entity at the same
@@ -63,9 +80,9 @@ public class BCell extends Circle2D implements PulseEntity {
 
                 // Figure out if this should start producing antibodies
                 if (_isNaive) {
-                    if (new Random().nextDouble() < _probMatch) {
-                        setActive();
-                    }
+                    setActive();
+                } else if (matchesPeptides()) {
+                    _isActive = true;
                 }
 
                 actor.removeFromWorld();
@@ -75,10 +92,9 @@ public class BCell extends Circle2D implements PulseEntity {
 
     private void produceMemoryCells() {
         for (int i = 0; i < _memoryCells; i ++) {
-            new BCell(this.getLocationX() + (i*5),this.getLocationY(),false).addToWorld();
+            new BCell(this.getLocationX() + (i*40),this.getLocationY(),false).addToWorld();
         }
         System.out.println("B Cell reproducing");
-        removeFromWorld();
     }
 
     @Override
@@ -97,18 +113,15 @@ public class BCell extends Circle2D implements PulseEntity {
             _elapsedSec = 0.0; // Reset the timer
         }
 
-        if (!_isNaive && _produceAntibodies) {
+        if (!_isNaive) {
             _elapsedAntibodyTimer += deltaSeconds;
-            if (_elapsedAntibodyTimer >= _antibodyRate) {
-                _antibodies.add(new Antibody(this.getLocationX(),this.getLocationY(),5,5,1));
-                _elapsedAntibodyTimer = 0.0;
-                if (_antibodies.size() > _antibodiesLimit) {
-                    System.out.println("here");
-                    for (Antibody ab : _antibodies) {
-                        ab.addToWorld();
-                    }
-                    produceMemoryCells();
+            if (_antibodies.size() < _antibodiesLimit) {
+                if (_elapsedAntibodyTimer >= _antibodyRate) {
+                    _antibodies.add(new Antibody(this.getLocationX(), this.getLocationY(), 5, 5, 1));
+                    _elapsedAntibodyTimer = 0.0;
                 }
+            } else if (_isActive) {
+                releaseAntibodies();
             }
         }
     }

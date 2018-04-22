@@ -5,7 +5,22 @@ How do B Cells get info about the fight?
 In this case let's assume that T Cells are the ones activating the B cells.
 
 Need:
-- B Cells just hanging out casually
+x B Cells just hanging out casually
 - T Cells sending out Cytokines
-- If a B cell is naive, then it will begin to produce antibodies to combat the antigen
-- ? The antibodies are then sent to combat the virus
+x If a B cell is naive, then it will begin to produce antibodies to combat the antigen
+x ? The antibodies are then sent to combat the virus
+x ? B cell should go away, memory cells are left in place
+- Memory cells
+
+What if we represented our model the following way:
+A cytokine lands on a b cell. There are two different things that can happen.
+1. The B cell is not naive.
+    1a. Cell releases antibodies
+    1b. OR Cell ignores the cytokine
+2. The B cell is naive.
+    1a. Cell produces antibodies
+    1b. Cell releases antibodies and leaves behind memory cells
+
+The memory cells or B cells that are not naive.
+
+https://www.ncbi.nlm.nih.gov/books/NBK27142/

@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
 
 import java.util.Random;
 
-// Cytokine for T-Cells
+// Cytokine for B-Cells
 public class BCytokine extends Circle2D implements PulseEntity {
     private static final Color _color = new Color(255 / 255.0, 186 / 255.0, 55 / 255.0, 1.0);
     private CytokineData _data = new CytokineData();
