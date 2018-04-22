@@ -28,7 +28,7 @@ public class BCell extends Circle2D implements PulseEntity {
     private double _elapsedAntibodyTimer = 0.0;
     private double _maxSecBeforeMovementChange = 5.0; // Change direction every x seconds
     private double _keepGoingInSameDirectionProb = 0.5;
-    private double _antibodyRate = 2.0;
+    private double _antibodyRate = 1.0; // 100% chance that will be making antibodies
     private double _probMatch = .2;
     private int _antibodiesLimit = 5;
     private int _memoryCells = 3;
@@ -69,7 +69,6 @@ public class BCell extends Circle2D implements PulseEntity {
                 }
 
                 actor.removeFromWorld();
-                //setWidthHeight(getWidth() + _fatnessOffset, getHeight() + _fatnessOffset);
             }
         }
     }
@@ -80,7 +79,12 @@ public class BCell extends Circle2D implements PulseEntity {
         }
         System.out.println("B Cell reproducing");
         removeFromWorld();
-        _produceAntibodies = false; // Done because he keeps reproducing after being removed from the world
+    }
+
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
     }
 
     @Override

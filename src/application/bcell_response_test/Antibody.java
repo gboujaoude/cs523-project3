@@ -1,8 +1,6 @@
 package application.bcell_response_test;
 
-import engine.Actor;
-import engine.Circle2D;
-import engine.PulseEntity;
+import engine.*;
 import javafx.scene.paint.Color;
 
 import java.util.HashSet;
@@ -20,8 +18,22 @@ public class Antibody extends Circle2D implements PulseEntity {
     }
 
     @Override
-    public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
-        super.onActorOverlapped(actor, actors);
+    public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
+        for (Actor curr: collidedWith) {
+            if (curr instanceof  BystanderCell) {
+                BystanderCell cell = (BystanderCell) curr;
+                cell.removeFromWorld();
+                this.removeFromWorld();
+                System.out.println("removing self");
+            }
+        }
+
+    }
+
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
     }
 
     /**
