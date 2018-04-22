@@ -21,18 +21,13 @@ public class BcellResponseTest implements ApplicationEntryPoint {
 //        }
 
         quadrant = QuadrantBuilder.makeQuadrant(0,10);
-        for (int i =0; i < 30; i++) {
+        for (int i =0; i < 1; i++) {
             new BCell(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
         quadrant = QuadrantBuilder.makeQuadrant(0, 5);
-        quadrant = QuadrantBuilder.makeQuadrant(95, 96);
-        int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
-        int worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
 
-
-        Random rng = new Random();
-        for (int i = 0; i < 250; ++i) {
-            new Cytokine(rng.nextDouble() * worldWidth, rng.nextDouble() * worldHeight).addToWorld();
+        for (int i = 0; i < 500; ++i) {
+            new Cytokine(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
 //        new Barrier(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY(), worldWidth, 10, 1).addToWorld();
 

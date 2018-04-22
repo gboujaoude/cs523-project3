@@ -34,18 +34,24 @@ public class BCell extends Circle2D implements PulseEntity {
     private int _memoryCells = 3;
     private double _fatnessOffset = 5;
     private boolean _isNaive = true; // true means it hasn't made any type of antibody yet
-    private boolean _producedAntibodies = false;
+    private boolean _produceAntibodies = false;
     private ArrayList<Antibody> _antibodies = new ArrayList<>();
 
     public BCell(double locationX, double locationY) {
+        this(locationX,locationY,true);
+    }
+
+    public BCell(double locationX, double locationY, boolean _isNaive) {
         super(locationX, locationY, 75, 75, 1);
         _changeDirection();
+        setColor(_color);
+        this._isNaive = _isNaive;
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
     }
 
     private void setActive() {
         _isNaive = false;
-        _producedAntibodies = true;
+        _produceAntibodies = true;
     }
 
     // This will be called when we collide with any other entity at the same
@@ -54,8 +60,6 @@ public class BCell extends Circle2D implements PulseEntity {
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         for (Actor actor : collidedWith) {
             if (actor instanceof Cytokine) {
-                System.out.println("Wut.");
-//                System.out.println("BCell intercepted Cytokine - analyzing");
 
                 // Figure out if this should start producing antibodies
                 if (_isNaive) {
@@ -72,9 +76,10 @@ public class BCell extends Circle2D implements PulseEntity {
 
     private void produceMemoryCells() {
         for (int i = 0; i < _memoryCells; i ++) {
-            new BCell(this.getLocationX() + (i*5),this.getLocationY()).addToWorld();
+            new BCell(this.getLocationX() + (i*5),this.getLocationY(),false).addToWorld();
         }
-        this.removeFromWorld();
+        System.out.println("B Cell reproducing");
+        removeFromWorld();
     }
 
     @Override
@@ -87,13 +92,16 @@ public class BCell extends Circle2D implements PulseEntity {
             _elapsedSec = 0.0; // Reset the timer
         }
 
-        if (!_isNaive && _producedAntibodies) {
+        if (!_isNaive && _produceAntibodies) {
             _elapsedAntibodyTimer += deltaSeconds;
             if (_elapsedAntibodyTimer >= _antibodyRate) {
                 _antibodies.add(new Antibody(this.getLocationX(),this.getLocationY(),5,5,1));
                 _elapsedAntibodyTimer = 0.0;
                 if (_antibodies.size() > _antibodiesLimit) {
-                    for (Antibody ab : _antibodies) ab.addToWorld();
+                    System.out.println("here");
+                    for (Antibody ab : _antibodies) {
+                        ab.addToWorld();
+                    }
                     produceMemoryCells();
                 }
             }
