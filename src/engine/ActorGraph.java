@@ -1,6 +1,8 @@
 package engine;
 
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An ActorGraph is an extension of the Actor concept, where
@@ -25,8 +27,9 @@ import java.util.HashSet;
  * @author Justin Hall
  */
 public abstract class ActorGraph extends Actor {
-    private HashSet<ActorGraph> _actorTree = new HashSet<>();
-    private ActorGraph _attachedTo;
+    private static final Object _obj = new Object();
+    private ConcurrentHashMap<ActorGraph, Object> _actorTree = new ConcurrentHashMap<>();
+    private AtomicReference<ActorGraph> _attachedTo = new AtomicReference<>(null);
 
     /**
      * Attaches an actor to this actor (the given actor
@@ -35,7 +38,7 @@ public abstract class ActorGraph extends Actor {
      */
     public void attachActor(ActorGraph actor)
     {
-        _actorTree.add(actor);
+        _actorTree.putIfAbsent(actor, _obj);
         actor.setAttachedTo(this);
     }
 
@@ -44,7 +47,7 @@ public abstract class ActorGraph extends Actor {
      */
     public boolean isAttached()
     {
-        return _attachedTo != null;
+        return _attachedTo.get() != null;
     }
 
     /**
@@ -53,7 +56,7 @@ public abstract class ActorGraph extends Actor {
      */
     public boolean contains(ActorGraph actor)
     {
-        return _actorTree.contains(actor);
+        return _actorTree.containsKey(actor);
     }
 
     /**
@@ -62,11 +65,11 @@ public abstract class ActorGraph extends Actor {
     public void removeActor(ActorGraph actor)
     {
         _actorTree.remove(actor);
-        actor._attachedTo = null;
+        actor._attachedTo.set(null);
     }
 
     // Package private
-    HashSet<ActorGraph> getActors()
+    protected ConcurrentHashMap<ActorGraph, Object> getActors()
     {
         return _actorTree;
     }
@@ -79,11 +82,11 @@ public abstract class ActorGraph extends Actor {
                     "attach actor B to actor A - cyclic graph");
         }
         if (isAttached()) actor.removeActor(this); // Remove ourself from old actor's tree
-        _attachedTo = actor;
+        _attachedTo.set(actor);
     }
 
     private ActorGraph getAttachedTo()
     {
-        return _attachedTo;
+        return _attachedTo.get();
     }
 }

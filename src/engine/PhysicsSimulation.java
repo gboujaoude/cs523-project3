@@ -110,9 +110,9 @@ public class PhysicsSimulation implements Task, MessageHandler {
             _checkAndCorrectOutOfBounds(graph, worldStartX, worldStartY, worldWidth, worldHeight);
             _rootSet.add(graph);
             _actorTree.add(graph);
-            for (ActorGraph attached : graph.getActors())
+            for (Map.Entry<ActorGraph, Object> attached : graph.getActors().entrySet())
             {
-                _updateGraphEntitiesRecursive(attached, worldStartX, worldStartY, worldWidth,
+                _updateGraphEntitiesRecursive(attached.getKey(), worldStartX, worldStartY, worldWidth,
                         worldHeight, deltaSpeedX, deltaSpeedY);
             }
         }
@@ -136,9 +136,9 @@ public class PhysicsSimulation implements Task, MessageHandler {
         }
         _rootSet.add(actor);
         // Process its attached actors regardless
-        for (ActorGraph attached : actor.getActors())
+        for (Map.Entry<ActorGraph, Object> attached : actor.getActors().entrySet())
         {
-            _updateGraphEntitiesRecursive(attached, worldStartX, worldStartY, worldWidth,
+            _updateGraphEntitiesRecursive(attached.getKey(), worldStartX, worldStartY, worldWidth,
                     worldHeight, deltaSpeedX, deltaSpeedY);
         }
     }
