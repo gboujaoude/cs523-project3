@@ -80,6 +80,7 @@ public class BCell extends Circle2D implements PulseEntity {
         }
         System.out.println("B Cell reproducing");
         removeFromWorld();
+        _produceAntibodies = false; // Done because he keeps reproducing after being removed from the world
     }
 
     @Override
