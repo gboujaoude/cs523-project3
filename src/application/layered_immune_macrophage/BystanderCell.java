@@ -8,6 +8,9 @@ import java.util.ArrayList;
 public class BystanderCell extends Circle2D implements PulseEntity {
     private static final Color _healthyColor = new Color(102 / 255.0, 189 / 255.0, 255 / 255.0, 1);
     private static final Color _unhealthyColor = new Color(255 / 255.0, 110 / 255.0, 88 / 255.0, 1);
+    private static Text2D _text = null;
+    private static int _numHealthyCells = 0;
+    private static int _numInfectedCells = 0;
     private boolean _isInfected = false;
     private double _elapsedSec = 0.0;
     private final double _virusCreationRate = 2.0; // new virus every x seconds
@@ -17,6 +20,12 @@ public class BystanderCell extends Circle2D implements PulseEntity {
 
     public BystanderCell(double x, double y) {
         super(x, y, 50, 50, 1);
+        if (_text == null) {
+            _text = new Text2D("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells, 25, 150, 500, 50, 0);
+            _text.setColor(Color.BLUEVIOLET);
+            _text.setAsStaticActor(true);
+            _text.addToWorld();
+        }
         setColor(_healthyColor);
     }
 
@@ -29,6 +38,9 @@ public class BystanderCell extends Circle2D implements PulseEntity {
         _virus = virus;
         virus.removeFromWorld();
         setColor(_unhealthyColor);
+        --_numHealthyCells;
+        ++_numInfectedCells;
+        _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
     public void selfDestruct() {
@@ -39,12 +51,18 @@ public class BystanderCell extends Circle2D implements PulseEntity {
     public void addToWorld() {
         super.addToWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
+        if (infected()) ++_numInfectedCells;
+        else ++_numHealthyCells;
+        _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
     @Override
     public void removeFromWorld() {
         super.removeFromWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
+        if (infected()) --_numInfectedCells;
+        else --_numHealthyCells;
+        _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
     @Override

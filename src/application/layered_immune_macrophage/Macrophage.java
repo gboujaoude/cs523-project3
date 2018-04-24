@@ -134,7 +134,6 @@ public class Macrophage extends Circle2D  implements PulseEntity {
         public void _refillPouch(double deltaTime) {
             _elapsedTime += deltaTime;
             if (_elapsedTime > 2) {
-                System.out.println("new tcytokine");
                 cytokinePouch.add(new TCytokine(0,0,0,0));
                 _elapsedTime = 0.0;
             }
