@@ -12,7 +12,7 @@ import java.util.LinkedList;
 // Kills anything it collides with
 public class Barrier extends Rectangle2D implements PulseEntity {
     private int _numTCellsNeeded = 0;
-    private final double _secondsPerTCell = 0.5;
+    private final double _secondsPerTCell = 0.125;
     private double _elapsedSeconds = 0.0;
     private LinkedList<TCytokine> _cytokines = new LinkedList<>();
     private Quadrant _quadrant = QuadrantBuilder.makeQuadrant(60, 70);
