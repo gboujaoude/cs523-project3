@@ -1,7 +1,6 @@
 package application.layered_immune_macrophage;
 
-import engine.Actor;
-import engine.Circle2D;
+import engine.*;
 import javafx.scene.paint.Color;
 
 import java.util.HashSet;
@@ -9,9 +8,16 @@ import java.util.Random;
 
 public class Virus extends Circle2D {
     private static final Color _color = new Color(255 / 255.0, 73 / 255.0, 61 / 255.0, 1.0);
+    private static Text2D _text = null;
+    private static int _numViruses = 0;
 
     public Virus(double x, double y) {
         super(x, y, 5, 5, 1);
+        if (_text == null) {
+            _text = new Text2D("Viruses: " + _numViruses, 25, 50, 350, 50, 0);
+            _text.setAsStaticActor(true);
+            _text.addToWorld();
+        }
         setColor(_color);
         Random rng = new Random();
         final double speed = 100;
@@ -24,6 +30,20 @@ public class Virus extends Circle2D {
         Random rng = new Random();
         final double speed = 100;
         setSpeedXY(rng.nextDouble() * speed, rng.nextDouble() * speed);
+    }
+
+    @Override
+    public void addToWorld() {
+        super.addToWorld();
+        ++_numViruses;
+        _text.setText("Viruses: " + _numViruses);
+    }
+
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        --_numViruses;
+        _text.setText("Viruses: " + _numViruses);
     }
 
     @Override
