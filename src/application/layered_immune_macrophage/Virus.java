@@ -11,6 +11,7 @@ public class Virus extends Circle2D {
     private static final Color _color = new Color(255 / 255.0, 73 / 255.0, 61 / 255.0, 1.0);
     private static Text2D _text = null;
     private static AtomicInteger _numViruses = new AtomicInteger(0);
+    private volatile boolean _added = false;
 
     public Virus(double x, double y) {
         super(x, y, 5, 5, 1);
@@ -36,6 +37,8 @@ public class Virus extends Circle2D {
     @Override
     public void addToWorld() {
         super.addToWorld();
+        if (_added) return;
+        _added = true;
         _numViruses.getAndIncrement();
         _text.setText("Viruses: " + _numViruses.get());
     }
@@ -43,6 +46,8 @@ public class Virus extends Circle2D {
     @Override
     public void removeFromWorld() {
         super.removeFromWorld();
+        if (!_added) return;
+        _added = false;
         _numViruses.getAndDecrement();
         _text.setText("Viruses: " + _numViruses.get());
     }
