@@ -8,11 +8,12 @@ import javafx.scene.paint.Color;
 
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TCell extends Circle2D implements PulseEntity {
     private static final Color _color = new Color(255 / 255.0, 173 / 255.0, 31 / 255.0, 1);
     private static Text2D _text = null;
-    private static int _numTCells = 0;
+    private static AtomicInteger _numTCells = new AtomicInteger(0);
     private double _targetX = 0.0;
     private double _targetY = 0.0;
     private double _elapsedSec = 0.0;
@@ -44,7 +45,7 @@ public class TCell extends Circle2D implements PulseEntity {
     public TCell(double x, double y) {
         super(x, y, 30, 30, 1);
         if (_text == null) {
-            _text = new Text2D("TCells: " + _numTCells, 25, 100, 350, 50, 0);
+            _text = new Text2D("TCells: " + _numTCells.get(), 25, 100, 350, 50, 0);
             _text.setColor(_color);
             _text.setAsStaticActor(true);
             _text.addToWorld();
@@ -101,7 +102,7 @@ public class TCell extends Circle2D implements PulseEntity {
     public void addToWorld() {
         super.addToWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
-        ++_numTCells;
+        _numTCells.getAndIncrement();
         _text.setText("TCells: " + _numTCells);
     }
 
@@ -109,7 +110,7 @@ public class TCell extends Circle2D implements PulseEntity {
     public void removeFromWorld() {
         super.removeFromWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
-        --_numTCells;
+        _numTCells.getAndDecrement();
         _text.setText("TCells: " + _numTCells);
     }
 

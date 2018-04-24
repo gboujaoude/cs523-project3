@@ -5,11 +5,12 @@ import javafx.scene.paint.Color;
 
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Virus extends Circle2D {
     private static final Color _color = new Color(255 / 255.0, 73 / 255.0, 61 / 255.0, 1.0);
     private static Text2D _text = null;
-    private static int _numViruses = 0;
+    private static AtomicInteger _numViruses = new AtomicInteger(0);
 
     public Virus(double x, double y) {
         super(x, y, 5, 5, 1);
@@ -35,15 +36,15 @@ public class Virus extends Circle2D {
     @Override
     public void addToWorld() {
         super.addToWorld();
-        ++_numViruses;
-        _text.setText("Viruses: " + _numViruses);
+        _numViruses.getAndIncrement();
+        _text.setText("Viruses: " + _numViruses.get());
     }
 
     @Override
     public void removeFromWorld() {
         super.removeFromWorld();
-        --_numViruses;
-        _text.setText("Viruses: " + _numViruses);
+        _numViruses.getAndDecrement();
+        _text.setText("Viruses: " + _numViruses.get());
     }
 
     @Override

@@ -32,7 +32,7 @@ public class LayeredImmuneSystem implements ApplicationEntryPoint {
         }
         quadrant = QuadrantBuilder.makeQuadrant(75, 80);
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
-        new Barrier(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY(), worldWidth, 10, 1).addToWorld();
+        new Barrier(0, quadrant.getRandomPosition().getY(), worldWidth, 10, 1).addToWorld();
 
     }
 

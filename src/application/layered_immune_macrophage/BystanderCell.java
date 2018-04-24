@@ -4,14 +4,16 @@ import engine.*;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BystanderCell extends Circle2D implements PulseEntity {
     private static final Color _healthyColor = new Color(102 / 255.0, 189 / 255.0, 255 / 255.0, 1);
     private static final Color _unhealthyColor = new Color(255 / 255.0, 110 / 255.0, 88 / 255.0, 1);
     private static Text2D _text = null;
-    private static int _numHealthyCells = 0;
-    private static int _numInfectedCells = 0;
+    private static AtomicInteger _numHealthyCells = new AtomicInteger(0);
+    private static AtomicInteger _numInfectedCells = new AtomicInteger(0);
     private boolean _isInfected = false;
+    private volatile boolean _added = false;
     private double _elapsedSec = 0.0;
     private final double _virusCreationRate = 2.0; // new virus every x seconds
     private final int _maxViruses = 10;
@@ -38,8 +40,8 @@ public class BystanderCell extends Circle2D implements PulseEntity {
         _virus = virus;
         virus.removeFromWorld();
         setColor(_unhealthyColor);
-        --_numHealthyCells;
-        ++_numInfectedCells;
+        _numHealthyCells.getAndDecrement();
+        _numInfectedCells.getAndIncrement();
         _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
@@ -49,19 +51,23 @@ public class BystanderCell extends Circle2D implements PulseEntity {
 
     @Override
     public void addToWorld() {
+        if (_added) return;
         super.addToWorld();
+        _added = true;
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
-        if (infected()) ++_numInfectedCells;
-        else ++_numHealthyCells;
+        if (infected()) _numInfectedCells.getAndIncrement();
+        else _numHealthyCells.getAndIncrement();
         _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
     @Override
     public void removeFromWorld() {
+        if (!_added) return;
         super.removeFromWorld();
+        _added = false;
         Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
-        if (infected()) --_numInfectedCells;
-        else --_numHealthyCells;
+        if (infected()) _numInfectedCells.getAndDecrement();
+        else _numHealthyCells.getAndDecrement();
         _text.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
     }
 
