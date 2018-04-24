@@ -169,10 +169,12 @@ public class PhysicsSimulation implements Task, MessageHandler {
             HashSet<ActorGraph> set = iterator.next();
             for (ActorGraph outer : set) {
                 HashSet<Actor> outerCollisions = _collisions.get(outer);
+                if (outerCollisions == null) continue;
                 double depth = outer.getDepth();
                 for (ActorGraph inner : set) {
                     if (outer == inner || depth != inner.getDepth()) continue;
                     HashSet<Actor> innerCollisions = _collisions.get(inner);
+                    if (innerCollisions == null) continue;
                     if (_collided(outer, inner)) {
                         outerCollisions.add(inner);
                         innerCollisions.add(outer);
