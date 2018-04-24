@@ -31,8 +31,8 @@ public class MacrophagePerimeter extends Circle2D implements PulseEntity {
 
     @Override
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
+        // Check for viruses and infected cells
         for(Actor actor: collidedWith) {
-            // Check for viruses intersecting
             if (actor instanceof Virus) {
                 _enemyCounter ++;
             } else if (actor instanceof BystanderCell) {
@@ -40,10 +40,6 @@ public class MacrophagePerimeter extends Circle2D implements PulseEntity {
                     _enemyCounter ++;
                 }
             }
-//            if (_enemyCounter > _enemyThreshold) {
-//                System.out.println("_enemyCounter = " + _enemyCounter);
-//                System.exit(0);
-//            }
         }
     }
 

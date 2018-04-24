@@ -32,7 +32,6 @@ public class Macrophage extends Circle2D  implements PulseEntity {
     private List<String> _whitelist;
     private static Color _color = new Color(0 / 255.0, 167 / 255.0, 61 / 255.0, 1);
     private int _numVirusesEaten = 0;
-    private boolean _signaledForHelp = false;
     private CytokinePouch _pouch = new CytokinePouch();
     private MacrophagePerimeter mp;
 
@@ -65,10 +64,6 @@ public class Macrophage extends Circle2D  implements PulseEntity {
                 System.out.println("Found virus -> eating (eaten [" + _numVirusesEaten + "] viruses total)");
                 actor.removeFromWorld();
             }
-//            if (_needHelp && !_signaledForHelp) {
-//                System.out.println("Requesting backup");
-//                _signaledForHelp = true;
-//            }
         }
     }
 
