@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The renderer manages all drawable entities in the scene and also
@@ -137,17 +138,6 @@ public class Renderer implements MessageHandler {
     {
         if (_updatingEntities) return; // Not done with collisions/movement simulation
         _collision.setDeltaSeconds(deltaSeconds);
-        // Dispatch all collision events
-        HashMap<Actor, HashSet<Actor>> collisions = _collision.getPreviousCollisions();
-        for (Map.Entry<Actor, HashSet<Actor>> entry : collisions.entrySet()) {
-            HashSet<Actor> actors = entry.getValue();
-            if (actors.size() > 0) {
-                Actor a = entry.getKey();
-                a.onActorOverlapped(a, actors);
-                HashSet<CollisionEventCallback> callbacks = a.getCollisionEventCallbacks();
-                for (CollisionEventCallback callback : callbacks) callback.onActorOverlapped(a, actors);
-            }
-        }
         // Clear the screen
         _gc.setFill(Color.WHITE);
         _gc.fillRect(0, 0,
@@ -174,6 +164,32 @@ public class Renderer implements MessageHandler {
         int screenWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsInt();
         int screenHeight = Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsInt();
         _graphicsEntities.clear();
+        // Dispatch all collision events and update any graphics entities
+        ConcurrentHashMap<Actor, HashSet<Actor>> collisions = _collision.getPreviousCollisions();
+        for (Map.Entry<Actor, HashSet<Actor>> entry : collisions.entrySet()) {
+            HashSet<Actor> actors = entry.getValue();
+            Actor a = entry.getKey();
+            if (a instanceof GraphicsEntity) {
+                GraphicsEntity entity = (GraphicsEntity)a;
+                location = entity.getTranslationVec();
+                boolean isStatic = entity.isStaticActor();
+                double origX = location.x();
+                double origY = location.y();
+                double z = location.z();
+                screenX = origX + (isStatic ? 0 : xOffset);
+                screenY = origY + (isStatic ? 0 : yOffset);
+                location.setXYZ(screenX, screenY, z);
+                _graphicsEntities.add(entity);
+                entity.setScreenVisibility(false); // Assume false for now
+                location.setXYZ(origX, origY, z);
+            }
+            if (actors.size() > 0) {
+                a.onActorOverlapped(a, actors);
+                HashSet<CollisionEventCallback> callbacks = a.getCollisionEventCallbacks();
+                for (CollisionEventCallback callback : callbacks) callback.onActorOverlapped(a, actors);
+            }
+        }
+        /*
         for (GraphicsEntity entity : _entities) {
             location = entity.getTranslationVec();
             boolean isStatic = entity.isStaticActor();
@@ -187,6 +203,7 @@ public class Renderer implements MessageHandler {
             entity.setScreenVisibility(false); // Assume false for now
             location.setXYZ(origX, origY, z);
         }
+        */
         // Reorder scene as needed so things are drawn in the proper order
         //HashSet<GraphicsEntity> actors = _graphicsEntities.getAllActors();
         HashSet<GraphicsEntity> actors = _graphicsEntities.getActorsWithinArea(0, 0, screenWidth, screenHeight);

@@ -12,7 +12,7 @@ public class MacrophagePerimeter extends Circle2D implements PulseEntity {
 
     private static Color _color = new Color(255 / 255.0, 67 / 255.0, 61 / 255.0, 0);
     private int _enemyCounter = 0;
-    private int _enemyThreshold = 3;
+    private int _enemyThreshold = 10;
 
     public MacrophagePerimeter(double x, double y, double radiusX, double radiusY, double depth) {
         super(x, y, radiusX, radiusY, depth);
@@ -32,10 +32,12 @@ public class MacrophagePerimeter extends Circle2D implements PulseEntity {
     @Override
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         // Check for viruses and infected cells
+        _enemyCounter = 0;
         for(Actor actor: collidedWith) {
             if (actor instanceof Virus) {
                 _enemyCounter ++;
-            } else if (actor instanceof BystanderCell) {
+            }
+            else if (actor instanceof BystanderCell) {
                 if (((BystanderCell) actor).infected()) {
                     _enemyCounter ++;
                 }

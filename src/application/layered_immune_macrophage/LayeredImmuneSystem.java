@@ -13,24 +13,24 @@ public class LayeredImmuneSystem implements ApplicationEntryPoint {
     public void init() {
         Engine.getConsoleVariables().loadConfigFile("src/application/layered_immune_sys_test/layered_sys.cfg");
         new CameraController().enableMouseInputComponent();
-        Quadrant quadrant = QuadrantBuilder.makeQuadrant(0, 30);
-        for (int i = 0; i < 1000; ++i) {
+        Quadrant quadrant = QuadrantBuilder.makeQuadrant(0, 60);
+        for (int i = 0; i < 2000; ++i) {
             new BystanderCell(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
 
-        quadrant = QuadrantBuilder.makeQuadrant(4,7);
-        for (int i = 0; i < 1; ++i) {
+        //quadrant = QuadrantBuilder.makeQuadrant(4,7);
+        for (int i = 0; i < 70; ++i) {
             new Macrophage(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
-        quadrant = QuadrantBuilder.makeQuadrant(30, 40);
-        for (int i = 0; i < 400; ++i) {
+        quadrant = QuadrantBuilder.makeQuadrant(60, 70);
+        for (int i = 0; i < 25; ++i) {
             new TCell(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
         quadrant = QuadrantBuilder.makeQuadrant(0, 5);
         for (int i = 0; i < 100; ++i) {
             new Virus(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY()).addToWorld();
         }
-        quadrant = QuadrantBuilder.makeQuadrant(95, 96);
+        quadrant = QuadrantBuilder.makeQuadrant(75, 80);
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         new Barrier(quadrant.getRandomPosition().getX(), quadrant.getRandomPosition().getY(), worldWidth, 10, 1).addToWorld();
 

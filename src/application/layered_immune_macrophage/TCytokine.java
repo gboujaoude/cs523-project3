@@ -14,7 +14,7 @@ public class TCytokine extends Circle2D {
         super(x, y, 5, 5, 1);
         Random rng = new Random();
         setColor(_color);
-        final double speed = 175;
+        final double speed = 350;
         setSpeedXY(rng.nextDouble() * 75, speed);
         _data.locationX = attackLocationX;
         _data.locationY = attackLocationY;

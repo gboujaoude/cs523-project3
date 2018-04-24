@@ -145,7 +145,8 @@ public class Macrophage extends Circle2D  implements PulseEntity {
                 tCytokine.setStartLocation(offset(x),offset(y));
                 tCytokine.setAttackLocation(attackLocX,attackLocY);
                 tCytokine.addToWorld();
-                tCytokine.setSpeedXY(-2,50);
+                //final double speed = 175;
+                //tCytokine.setSpeedXY(-2,50);
             }
             cytokinePouch.clear();
             mp.resetPerimeter();

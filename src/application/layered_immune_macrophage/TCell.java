@@ -21,6 +21,9 @@ public class TCell extends Circle2D implements PulseEntity {
     private boolean _movingToHome = false;
     private boolean _active = false;
     private boolean _killedPathogen = false;
+    private boolean _lifespanCounterActive = false;
+    private double _elapsedLifespanSec = 0.0;
+    private final double _lifespanSec = 120;
     private Random _rng = new Random();
     private static final double _speed = 75;
     private static final double[] _directionX = new double[] {
@@ -39,6 +42,7 @@ public class TCell extends Circle2D implements PulseEntity {
     public TCell(double x, double y) {
         super(x, y, 30, 30, 1);
         setColor(_color);
+        setSpeedXY(_rng.nextDouble() * 75, 0);
     }
 
     @Override
@@ -53,7 +57,7 @@ public class TCell extends Circle2D implements PulseEntity {
                 int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsInt();
                 _targetY /= (double)worldWidth; // Normalize targetY so it works with QuadrantBuilder
                 _targetY *= 100; // Convert to a percentage
-                final double speed = 250.0;
+                final double speed = 350.0;
                 Quadrant quadrant = QuadrantBuilder.makeQuadrant(_targetY - 1, _targetY + 1);
                 _targetX = quadrant.getRandomPosition().getX();
                 _targetY = quadrant.getRandomPosition().getY();
@@ -62,6 +66,7 @@ public class TCell extends Circle2D implements PulseEntity {
                 setSpeedXY(speedVec.x() * speed, speedVec.y() * speed);
                 _movingToWarzone = true;
                 _active = true;
+                _lifespanCounterActive = true; // TCell will eventually die
                 _elapsedSec = 0.0;
                 _killedPathogen = false;
                 System.out.println("TCell activated -> moving to war zone");
@@ -70,6 +75,7 @@ public class TCell extends Circle2D implements PulseEntity {
                 actor.removeFromWorld();
                 System.out.println("TCell discovered virus -> destroying");
                 _killedPathogen = true;
+                _elapsedLifespanSec = 0.0;
             }
             else if (actor instanceof BystanderCell && _active) {
                 BystanderCell cell = (BystanderCell)actor;
@@ -77,6 +83,7 @@ public class TCell extends Circle2D implements PulseEntity {
                     System.out.println("TCell discovered infected cell -> destroying");
                     cell.selfDestruct();
                     _killedPathogen = true;
+                    _elapsedLifespanSec = 0.0;
                 }
             }
         }
@@ -96,6 +103,10 @@ public class TCell extends Circle2D implements PulseEntity {
 
     @Override
     public void pulse(double deltaSeconds) {
+        if (_lifespanCounterActive) {
+            _elapsedLifespanSec += deltaSeconds;
+            if (_elapsedLifespanSec >= _lifespanSec) removeFromWorld(); // TCell's time ran out and it died
+        }
         if (Math.abs(getLocationX() - _targetX) < 10 && Math.abs(getLocationY() - _targetY) < 10 && _movingToWarzone) {
             _movingToWarzone = false;
             setSpeedXY(0.0, 0.0);
@@ -131,10 +142,10 @@ public class TCell extends Circle2D implements PulseEntity {
                 _active = false;
                 _movingToWarzone = false;
                 _movingToHome = true;
-                Quadrant quadrant = QuadrantBuilder.makeQuadrant(30, 40);
+                Quadrant quadrant = QuadrantBuilder.makeQuadrant(60, 70);
                 _targetX = quadrant.getRandomPosition().getX();
                 _targetY = quadrant.getRandomPosition().getY();
-                final double speed = 250.0;
+                final double speed = 350.0;
                 Vector3 speedVec = new Vector3(_targetX - getLocationX(), _targetY - getLocationY(), 0.0);
                 speedVec.normalizeThis();
                 setSpeedXY(speedVec.x() * speed, speedVec.y() * speed);
