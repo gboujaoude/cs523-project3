@@ -8,7 +8,8 @@ import javafx.scene.paint.Color;
 import java.util.HashSet;
 
 public class MacrophagePerimeter extends Circle2D implements PulseEntity {
-    private static final Color _color = new Color(255 / 255.0, 173 / 255.0, 31 / 255.0, 0);
+    //private static final Color _color = new Color(255 / 255.0, 173 / 255.0, 31 / 255.0, 0);
+    private static Color _color = new Color(0 / 255.0, 167 / 255.0, 61 / 255.0, 0.2);
     private int _enemyCounter = 0;
     private int _enemyThreshold = 10;
 
