@@ -7,7 +7,7 @@ public class ModelGlobals {
     public static final String macrophageNum = "macrophage_num";
     public static final String macrophageSpeed = "macrophage_speed";
 
-    public static final String virusInitialNum = "macrophage_speed";
+    public static final String virusInitialNum = "virus_initial_num";
     public static final String virusSpeed = "virus_speed";
     public static final String virusPerSecond = "virus_per_second";
     public static final String virusesBeforeExplosion = "viruses_before_explosion";
