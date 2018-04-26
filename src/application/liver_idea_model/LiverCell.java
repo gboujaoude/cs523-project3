@@ -18,6 +18,7 @@ public class LiverCell extends Circle2D implements PulseEntity {
     private double _elapsedSec = 0.0;
     private boolean _infected = false;
     private Virus _infectedWith = null;
+    private boolean _added = false;
     private double _currentNumViruses = 0;
 
     public LiverCell(double x, double y) {
@@ -36,6 +37,7 @@ public class LiverCell extends Circle2D implements PulseEntity {
         _infectedWith = virus;
         _infected = true;
         setColor(_unhealthyColor); // Visual marker of infection
+        Engine.getMessagePump().sendMessage(new Message(ModelGlobals.cellInfected, this));
     }
 
     @Override
@@ -79,7 +81,10 @@ public class LiverCell extends Circle2D implements PulseEntity {
     public void addToWorld() {
         super.addToWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
-        Engine.getMessagePump().sendMessage(new Message(ModelGlobals.cellAddedToWorld));
+        if (!_added) {
+            Engine.getMessagePump().sendMessage(new Message(ModelGlobals.cellAddedToWorld, this));
+        }
+        _added = true;
     }
 
     /**
@@ -90,6 +95,9 @@ public class LiverCell extends Circle2D implements PulseEntity {
     public void removeFromWorld() {
         super.removeFromWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
-        Engine.getMessagePump().sendMessage(new Message(ModelGlobals.cellRemovedFromWorld));
+        if (_added) {
+            Engine.getMessagePump().sendMessage(new Message(ModelGlobals.cellRemovedFromWorld, this));
+        }
+        _added = false;
     }
 }

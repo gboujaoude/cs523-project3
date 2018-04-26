@@ -30,6 +30,7 @@ public class ModelGlobals {
     public static final String cellAddedToWorld = "cell_added";
     // For cellRemovedFromWorld, the data should be a reference to the cell that has been removed
     public static final String cellRemovedFromWorld = "cell_removed";
+    public static final String cellInfected = "cell_infected";
 
     public static final String lymphocyteAddedToWorld = "lymphocyte_added";
     public static final String lymphocyteRemovedFromWorld = "lymphocyte_removed";

@@ -14,6 +14,8 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     private double _elapsedLifeSeconds = 0.0;
     private boolean _changeSpeedImmediately = true;
     private boolean _reachedEndOfTrail = false;
+    private double _elapsedChangeDirSec = 0.0;
+    private final double _secondsBeforeChangeDir = 5.0;
     private final double _lifeSpanSec;
     private final double _speed;
 
@@ -41,15 +43,21 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
             _elapsedLifeSeconds += deltaSeconds;
             if (_elapsedLifeSeconds >= _lifeSpanSec) removeFromWorld(); // Lymphocyte died
             if (_reachedEndOfTrail) {
+                _elapsedChangeDirSec += deltaSeconds;
                 if (_changeSpeedImmediately) {
                     _changeSpeedRandomly();
                     _changeSpeedImmediately = false;
                 }
-                else if (_rng.nextDouble() <= 0.01) {
-                    _changeSpeedRandomly();
+                if (_elapsedChangeDirSec >= _secondsBeforeChangeDir) {
+                    if (_rng.nextDouble() <= 0.5) _changeSpeedRandomly();
+                    _elapsedChangeDirSec = 0.0;
                 }
             }
         }
+        double worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsFloat();
+        double locationY = getLocationY();
+        if ((locationY <= 10 || locationY > (worldHeight * .70)) &&
+                getSpeedY() < 0.0) setSpeedXY(getSpeedX(), -getSpeedY());
     }
 
     /**
