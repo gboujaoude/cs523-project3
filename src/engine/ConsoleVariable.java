@@ -156,11 +156,17 @@ public class ConsoleVariable {
         try
         {
             _cvarIntVal.set(Integer.parseInt(value));
-            _cvarFloatVal.set(Double.parseDouble(value));
         }
         catch (Exception e)
         {
             _cvarIntVal.set(-1);
+        }
+        try
+        {
+            _cvarFloatVal.set(Double.parseDouble(value));
+        }
+        catch (Exception e)
+        {
             _cvarFloatVal.set(-1.0);
         }
         // Try to cast it to a boolean
