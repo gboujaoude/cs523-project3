@@ -14,7 +14,8 @@ public class Cytokine extends Circle2D implements PulseEntity {
     private double _elapsedSeconds = 0.0;
     private final double _secondsUntilDuplication;
     private final boolean _isMainCytokine;
-    private final Pair<Double, Double> _startLocationXY;
+    private int _numElements = -1;
+    private Pair<Double, Double> _startLocationXY;
     private final Pair<Double, Double> _referencedLocation;
 
     /**
@@ -22,19 +23,26 @@ public class Cytokine extends Circle2D implements PulseEntity {
      * @param y starting y location
      * @param isMainCytokine if true, this cytokine will replicate itself
      */
-    public Cytokine(double x, double y, double referenceX, double referenceY, boolean isMainCytokine) {
+    public Cytokine(double x, double y, double referenceX, double referenceY,
+                    int numberInChain, boolean isMainCytokine) {
         super(x, y, 5, 5, 1);
         setColor(_color);
         _isMainCytokine = isMainCytokine;
         _secondsUntilDuplication = Engine.getConsoleVariables().find(ModelGlobals.cytokineSecondsUntilDuplication).getcvarAsFloat();
         // If we are not the main cytokine, use referenceX and referenceY for the reference locations,
         // but otherwise use our starting x and y locations
-        if (!_isMainCytokine) _referencedLocation = new Pair<>(referenceX, referenceY);
+        if (!_isMainCytokine) {
+            referenceX = numberInChain == 0 ? -1 : referenceX;
+            referenceY = numberInChain == 0 ? -1 : referenceY;
+            _numElements = numberInChain;
+            _referencedLocation = new Pair<>(referenceX, referenceY);
+        }
         else {
+            _numElements = -1;
             _referencedLocation = new Pair<>(x, y);
             // Only set the speed of this cytokine if we are the main cytokine
             final double speed = Engine.getConsoleVariables().find(ModelGlobals.cytokineSpeed).getcvarAsFloat();
-            setSpeedXY(speed * _rng.nextDouble(), speed * _rng.nextDouble());
+            setSpeedXY(speed * _rng.nextDouble(), speed);
         }
         _startLocationXY = new Pair<>(x, y);
     }
@@ -56,7 +64,9 @@ public class Cytokine extends Circle2D implements PulseEntity {
         if (_elapsedSeconds >= _secondsUntilDuplication) {
             _elapsedSeconds = 0.0;
             Cytokine cytokine = new Cytokine(getLocationX(), getLocationY(),
-                    _startLocationXY.getKey(), _startLocationXY.getValue(), false);
+                    _startLocationXY.getKey(), _startLocationXY.getValue(),
+                    ++_numElements, false);
+            _startLocationXY = new Pair<>(getLocationX(), getLocationY());
             cytokine.addToWorld();
         }
     }

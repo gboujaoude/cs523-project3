@@ -3,6 +3,7 @@ package application.liver_idea_model;
 import engine.Actor;
 import engine.Circle2D;
 import engine.Engine;
+import engine.Message;
 import javafx.scene.paint.Color;
 
 import java.util.HashSet;
@@ -12,6 +13,7 @@ public class Virus extends Circle2D {
     private static final Color _color = new Color(255 / 255.0, 73 / 255.0, 61 / 255.0, 1.0);
     private static final Random _rng = new Random();
     private final double _speed;
+    private boolean _added = false;
 
     public Virus(double x, double y) {
         super(x, y, 5, 5, 1);
@@ -33,5 +35,32 @@ public class Virus extends Circle2D {
                 }
             }
         }
+    }
+
+    /**
+     * This function ensures that the render entity is added to the world. After
+     * calling this it will be regularly called by the Engine and its movement
+     * will be calculated by the Renderer and it will be drawn on the screen.
+     */
+    @Override
+    public void addToWorld() {
+        super.addToWorld();
+        if (!_added) {
+            Engine.getMessagePump().sendMessage(new Message(ModelGlobals.virusAddedToWorld));
+        }
+        _added = true;
+    }
+
+    /**
+     * After calling this the entity will no longer be drawn and its update function will
+     * not be called
+     */
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        if (_added) {
+            Engine.getMessagePump().sendMessage(new Message(ModelGlobals.virusRemovedFromWorld));
+        }
+        _added = false;
     }
 }

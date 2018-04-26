@@ -12,9 +12,8 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     private static final Random _rng = new Random();
     private boolean _activated = false;
     private double _elapsedLifeSeconds = 0.0;
-    private long _timestampOfLastCytokineEncounter = 0;
     private boolean _changeSpeedImmediately = true;
-    private final double _freeRoamThresholdSec = 10.0;
+    private boolean _reachedEndOfTrail = false;
     private final double _lifeSpanSec;
     private final double _speed;
 
@@ -41,10 +40,7 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
         if (activated()) {
             _elapsedLifeSeconds += deltaSeconds;
             if (_elapsedLifeSeconds >= _lifeSpanSec) removeFromWorld(); // Lymphocyte died
-            double elapsedSec = (_timestampOfLastCytokineEncounter) / 1000.0;
-            // If it hasn't encountered a cytokine in threshold sec amount of time,
-            // move to free roam stage
-            if (elapsedSec >= _freeRoamThresholdSec) {
+            if (_reachedEndOfTrail) {
                 if (_changeSpeedImmediately) {
                     _changeSpeedRandomly();
                     _changeSpeedImmediately = false;
@@ -65,6 +61,7 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     public void addToWorld() {
         super.addToWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(ModelGlobals.lymphocyteAddedToWorld, this));
     }
 
     /**
@@ -75,12 +72,15 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     public void removeFromWorld() {
         super.removeFromWorld();
         Engine.getMessagePump().sendMessage(new Message(Constants.REMOVE_PULSE_ENTITY, this));
+        Engine.getMessagePump().sendMessage(new Message(ModelGlobals.lymphocyteRemovedFromWorld, this));
     }
 
     private void _changeSpeedRandomly() {
-        double speedX = _speed * _rng.nextDouble();
+        final double speed = 75;
+        final double minSpeed = 50;
+        double speedX = speed * _rng.nextDouble() + minSpeed;
         if (_rng.nextDouble() >= 0.5) speedX *= -1;
-        double speedY = _speed * _rng.nextDouble();
+        double speedY = speed * _rng.nextDouble() + minSpeed;
         if (_rng.nextDouble() >= 0.5) speedY *= -1;
         setSpeedXY(speedX, speedY);
     }
@@ -89,18 +89,35 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
         super.onActorOverlapped(actor, actors);
         for (Actor collided : actors) {
+            if (collided instanceof Virus) {
+                collided.removeFromWorld();
+                System.out.println("TCell: Found virus -> destroying");
+            }
+            else if (collided instanceof LiverCell) {
+                LiverCell cell = (LiverCell)collided;
+                if (cell.infected()) {
+                    cell.removeFromWorld();
+                    System.out.println("TCell: Found infected cell -> destroying");
+                }
+            }
             if (collided instanceof Cytokine) {
                 Cytokine cytokine = (Cytokine)collided;
+                cytokine.removeFromWorld();
+                if (_reachedEndOfTrail) return;
                 double refX = cytokine.getReferencedLocation().getKey();
                 double refY = cytokine.getReferencedLocation().getValue();
-                _timestampOfLastCytokineEncounter = System.currentTimeMillis();
                 _activated = true;
-                Vector3 refVec = new Vector3(refX, refY, 0.0);
-                Vector3 locationVec = new Vector3(getLocationX(), getLocationY(), 0.0);
-                refVec.subtractThis(locationVec);
-                refVec.normalizeThis();
-                setSpeedXY(_speed * refVec.x(), _speed * refVec.y());
-                _changeSpeedImmediately = true;
+                if (refX != -1 && refY != -1) {
+                    Vector3 refVec = new Vector3(refX, refY, 0.0);
+                    Vector3 locationVec = new Vector3(getLocationX(), getLocationY(), 0.0);
+                    refVec.subtractThis(locationVec);
+                    refVec.normalizeThis();
+                    setSpeedXY(_speed * refVec.x(), _speed * refVec.y());
+                }
+                else {
+                    _reachedEndOfTrail = true;
+                    _changeSpeedImmediately = true;
+                }
             }
         }
     }

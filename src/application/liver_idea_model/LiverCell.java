@@ -24,7 +24,6 @@ public class LiverCell extends Circle2D implements PulseEntity {
         super(x, y, 50, 50, 1);
         _maxNumViruses = Engine.getConsoleVariables().find(ModelGlobals.virusesBeforeExplosion).getcvarAsInt();
         _virusesPerSecond = Engine.getConsoleVariables().find(ModelGlobals.virusPerSecond).getcvarAsFloat();
-        System.out.println(_virusesPerSecond);
         setColor(_healthyColor);
     }
 
