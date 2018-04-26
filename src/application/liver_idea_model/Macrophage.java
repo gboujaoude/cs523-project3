@@ -92,7 +92,8 @@ public class Macrophage extends Circle2D implements PulseEntity{
         _mp.resetPerimeter();
         ArrayList<Double> spacing = Misc.linearSpacing(getLocationX(),getLocationY(),_maxPouchSize);
         for(int i = 0; i < _maxPouchSize; i ++) {
-            new Cytokine(spacing.get(i), getLocationY(), getLocationX(), getLocationY(),
+            new Cytokine(Misc.offset(spacing.get(i), 10, 20),
+                    Misc.offset(getLocationY(), 10, 20), getLocationX(), getLocationY(),
                     -1, true).addToWorld();
         }
         _mp.resetPerimeter();
