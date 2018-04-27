@@ -4,14 +4,12 @@ import application.CameraController;
 import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
 import engine.*;
-import javafx.application.Application;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 import java.text.DecimalFormat;
 import java.util.Random;
 
-public class LiverIdeaModel extends Application implements ApplicationEntryPoint, MessageHandler, PulseEntity {
+public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, PulseEntity {
     private static final Color _lymphocyteColor = new Color(255 / 255.0, 173 / 255.0, 31 / 255.0, 1);
     private static final Color _virusColor = Color.RED;
     private static final Color _cellColor = Color.BLUEVIOLET;
@@ -81,11 +79,6 @@ public class LiverIdeaModel extends Application implements ApplicationEntryPoint
         quad = QuadrantBuilder.makeQuadrant(75, 80);
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
         new Barrier(0, quad.getRandomPosition().getY(), worldWidth, 10).addToWorld();
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-
     }
 
     @Override
