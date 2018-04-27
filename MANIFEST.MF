@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: cs523_project3.jar
-Main-Class: application.liver_idea_model.LiverIdeaModel
-

@@ -4,7 +4,9 @@ import application.CameraController;
 import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
 import engine.*;
+import javafx.application.Application;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 import java.text.DecimalFormat;
 import java.util.Random;
