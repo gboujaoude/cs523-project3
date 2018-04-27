@@ -28,7 +28,7 @@ public abstract class Actor implements CollisionEventCallback {
     private Vector3 _scaleWidthHeight = new Vector3(1, 1, 1);
     private double _rotationAngle = 0;
     private double _depth = 0; // NOT the same as the translation z-component
-    private boolean _isVisibleOnScreen = true; // Updated by renderer
+    private boolean _isVisibleOnScreen = false; // Updated by renderer
     private boolean _isStaticActor = false; // If true it will not be transformed into camera space
     private boolean _constrainXMovement = false;
     private boolean _constrainYMovement = false;

@@ -1,6 +1,7 @@
 package engine;
 
 import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
 
@@ -59,6 +60,10 @@ public class Engine implements PulseEntity, MessageHandler {
     private volatile long _lastFrameTimeMS;
     private volatile boolean _isRunning = false;
     private volatile boolean _updateEntities = true; // If false, nothing is allowed to move
+    private volatile boolean _requiresRestart = false;
+    private volatile boolean _headless = false;
+    private volatile boolean _initializing = false;
+    private Runnable _gameLoop;
 
     // Wrapper around each logic entity
     private class LogicEntityTask implements Task {
@@ -127,7 +132,7 @@ public class Engine implements PulseEntity, MessageHandler {
      * @param callback this can be null - function to call when the given task has successfully completed
      *                 (this will always be called on the main application thread to avoid synchronization issues)
      */
-    public static void scheduleLogicTasks(ArrayList<Task> tasks, Callback callback) {
+    public static void scheduleLogicTasks(Callback callback, Task ... tasks) {
         TaskManager.Counter counter = _engine._taskManager.get().submitTasks(tasks);
         if (callback != null) {
             _engine._taskCallbackMap.put(counter, callback);
@@ -137,55 +142,52 @@ public class Engine implements PulseEntity, MessageHandler {
     public void start(ApplicationEntryPoint application) {
         synchronized(this) {
             if (_isRunning) return; // Already running
-            // Initialize the engine
-            _application = application;
-            _preInit();
-            _init();
-            // Initialize the game loop
-            Runnable frame = new Runnable() {
+            // Create the game loop
+            _gameLoop = new Runnable() {
                 @Override
                 public void run() {
                     if (!_isRunning) {
                         shutdown(); //System.exit(0); // Need to shut the system down
                         return;
                     }
-                    // Schedule the next frame
-                    Platform.runLater(this);
-                    long currentTimeMS = System.currentTimeMillis();
-                    double deltaSeconds = (currentTimeMS - _lastFrameTimeMS) / 1000.0;
-                    // Don't pulse faster than the maximum refresh rate
-                    if (deltaSeconds >= (1.0 / _maxFrameRate)) {
-                        pulse(deltaSeconds);
-                        _lastFrameTimeMS = currentTimeMS;
+                    try {
+                        if (_initializing) return; // Engine is not ready to run
+                        long currentTimeMS = System.currentTimeMillis();
+                        double deltaSeconds = (currentTimeMS - _lastFrameTimeMS) / 1000.0;
+                        // Don't pulse faster than the maximum refresh rate
+                        if (deltaSeconds >= (1.0 / _maxFrameRate)) {
+                            pulse(deltaSeconds);
+                            _lastFrameTimeMS = currentTimeMS;
+                        }
+                        // Message processing happens at a very fast rate, i.e. 240 times per second
+                        // to ensure high degree of responsiveness
+                        deltaSeconds = (currentTimeMS - _lastMessageQueueFrameTimeMS) / 1000.0;
+                        if (deltaSeconds >= (1.0 / _maxMessageQueueProcessingRate)) {
+                            _processMessages();
+                            _processCompletedTasks();
+                            _lastMessageQueueFrameTimeMS = currentTimeMS;
+                        }
                     }
-                    // Message processing happens at a very fast rate, i.e. 240 times per second
-                    // to ensure high degree of responsiveness
-                    deltaSeconds = (currentTimeMS - _lastMessageQueueFrameTimeMS) / 1000.0;
-                    if (deltaSeconds >= (1.0 / _maxMessageQueueProcessingRate)) {
-                        _processMessages();
-                        _processCompletedTasks();
-                        _lastMessageQueueFrameTimeMS = currentTimeMS;
+                    finally {
+                        if (_requiresRestart) {
+                            _softRestart();
+                            _requiresRestart = false;
+                        }
+                        // Kick off the next frame if the engine is not restarting
+                        else _dispatchEngineLogic(_gameLoop);
                     }
                 }
             };
-            // Schedule the first frame and then it will schedule itself from then on
-            Platform.runLater(frame);
-            /*
-            new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    if (!_isRunning) shutdown(); //System.exit(0); // Need to shut the system down
-                    long currentTimeMS = System.currentTimeMillis();
-                    double deltaSeconds = (currentTimeMS - _lastFrameTimeMS) / 1000.0;
-                    // Don't pulse faster than the maximum frame rate
-                    //if (deltaSeconds <= (1.0 / 60)) return;
-                    //System.out.println(deltaSeconds);
-                    pulse(deltaSeconds);
-                    _lastFrameTimeMS = currentTimeMS;
-                }
-            }.start();
-            */
+            // Initialize the engine
+            _application = application;
+            _preInit();
+            _init();
         }
+    }
+
+    private void _dispatchEngineLogic(Runnable runnable) {
+        if (_headless) scheduleLogicTasks(null, runnable::run);
+        else Platform.runLater(runnable);
     }
 
     private void _processMessages() {
@@ -257,7 +259,8 @@ public class Engine implements PulseEntity, MessageHandler {
             }
             case Constants.PERFORM_SOFT_RESET:
                 System.err.println("Engine: performing an in-place soft reset");
-                _softRestart();
+                //_softRestart();
+                _requiresRestart = true;
                 break;
             case Constants.ADD_LOGIC_ENTITY:
             {
@@ -310,9 +313,7 @@ public class Engine implements PulseEntity, MessageHandler {
         if (!_isRunning) return; // Engine is no longer active
         LogicEntity entity = task.getLogicEntity();
         if (_registeredLogicEntities.containsKey(entity)) {
-            ArrayList<Task> tasks = new ArrayList<>();
-            tasks.add(task);
-            Engine.scheduleLogicTasks(tasks, null);
+            Engine.scheduleLogicTasks(null, task);
         }
     }
 
@@ -330,15 +331,7 @@ public class Engine implements PulseEntity, MessageHandler {
             _registerDefaultCVars();
             _maxFrameRate = Math.abs(Engine.getConsoleVariables().find(Constants.ENG_LIMIT_FPS).getcvarAsInt());
             _registeredLogicEntities.clear();
-            boolean headless = true;
-            if (!Engine.getConsoleVariables().find(Constants.HEADLESS).getcvarAsBool()) {
-                headless = false;
-                if (_initialStage == null) {
-                    _initialStage = new Stage();
-                    _initialStage.show();
-                    _initialStage.setOnCloseRequest((value) -> shutdown());
-                }
-            }
+            _headless = Engine.getConsoleVariables().find(Constants.HEADLESS).getcvarAsBool();
             _updateEntities = Boolean.parseBoolean(getConsoleVariables().find(Constants.CALCULATE_MOVEMENT).getcvarValue());
             // Make sure we register all of the message types
             _registerMessageTypes();
@@ -358,13 +351,28 @@ public class Engine implements PulseEntity, MessageHandler {
             _pulseEntities = new HashSet<>();
             _lastFrameTimeMS = System.currentTimeMillis();
             _lastMessageQueueFrameTimeMS = System.currentTimeMillis();
-            // Only initialize the renderer if there is a graphics context
-            if (!headless) {
-                GraphicsContext gc = _window.init(_initialStage);
-                _renderer.init(gc);
-            }
-            _application.init();
             _maxFrameRate = getConsoleVariables().find(Constants.ENG_MAX_FPS).getcvarAsInt();
+            if (!_headless) {
+                _initializing = true; // Let's the main game loop know to spin while delayed initialization takes place
+                new JFXPanel(); // This forces JavaFX to initialize itself
+                _dispatchEngineLogic(() -> {
+                    if (_initialStage != null) _initialStage.close();
+                    _initialStage = new Stage();
+                    _initialStage.show();
+                    _initialStage.setOnCloseRequest((value) -> shutdown());
+                    GraphicsContext gc = _window.init(_initialStage);
+                    _renderer.init(gc);
+                    _application.init();
+                    _initializing = false;
+                });
+            }
+            else {
+                _window.init(null);
+                _renderer.init(null);
+                _application.init();
+            }
+            // Schedule the first frame and then it will schedule itself from then on
+            _dispatchEngineLogic(_gameLoop);
         }
     }
 
@@ -386,8 +394,10 @@ public class Engine implements PulseEntity, MessageHandler {
             // Dispatch the messages immediately
             getMessagePump().dispatchMessages();
             // Reallocate these only
-            _cvarSystem.set(new ConsoleVariables());
-            _messageSystem.set(new MessagePump());
+            //_cvarSystem.set(new ConsoleVariables());
+            //_messageSystem.set(new MessagePump());
+            getMessagePump().clearAllMessageHandlers();
+            _application.shutdown();
             _init();
         }
     }

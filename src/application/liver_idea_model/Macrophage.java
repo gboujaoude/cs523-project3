@@ -42,19 +42,25 @@ public class Macrophage extends Circle2D implements PulseEntity{
 
     @Override
     public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
+        int numViruses = 0;
+        int numInfected = 0;
         for(Actor curr: actors) {
             // Remove infected cells and viruses
             if (curr instanceof LiverCell) {
                 LiverCell cell = (LiverCell) curr;
                 if (cell.infected()) {
                     cell.removeFromWorld();
-                    System.out.println("Macrophage: Found infected cell -> destroying");
+                    ++numInfected;
+                    //System.out.println("Macrophage: Found infected cell -> destroying");
                 }
             } else if (curr instanceof Virus) {
                 curr.removeFromWorld();
-                System.out.println("Macrophage: Found virus -> destroying");
+                ++numViruses;
+                //System.out.println("Macrophage: Found virus -> destroying");
             }
         }
+        if (numInfected > 0) System.out.println("Macrophage: Found [" + numInfected + "] infected cells -> destroying");
+        if (numViruses > 0) System.out.println("Macrophage: Found [" + numViruses + "] viruses -> destroying");
     }
 
     /**
@@ -101,7 +107,7 @@ public class Macrophage extends Circle2D implements PulseEntity{
     }
 
     private void _changeDirection() {
-        final double minSpeed = 50;
+        final double minSpeed = _speed;
         double speedX = _speed * _rng.nextDouble() + minSpeed;
         double speedY = _speed * _rng.nextDouble() + minSpeed;
         if (_rng.nextDouble() >= 0.5) speedX *= -1;

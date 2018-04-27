@@ -36,6 +36,7 @@ public class Window implements MessageHandler, PulseEntity {
     private String _title = "Application";
     private HashSet<MouseInputComponent> _mouseInputComponents;
     private InternalMouseInputManager _mouseInputManager;
+    private volatile boolean _headless;
 
     private class MouseSnapshot {
         boolean moved = false;
@@ -123,8 +124,7 @@ public class Window implements MessageHandler, PulseEntity {
      */
     public GraphicsContext init(Stage stage)
     {
-        // We want to update frequently to check for resizes, so tell the system to add us as a pulse entity
-        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
+        _headless = stage == null;
         Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_FULLSCREEN, Boolean.toString(_isFullscreen)));
         Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_WIDTH, Integer.toString(_width)));
         Engine.getConsoleVariables().registerVariable(new ConsoleVariable(Constants.SCR_HEIGHT, Integer.toString(_height)));
@@ -153,6 +153,9 @@ public class Window implements MessageHandler, PulseEntity {
         Engine.getMessagePump().signalInterest(Constants.REMOVE_UI_ELEMENT, this);
         Engine.getMessagePump().signalInterest(Constants.CONSOLE_VARIABLE_CHANGED, this);
         Engine.getMessagePump().signalInterest(Constants.REMOVE_ALL_UI_ELEMENTS, this);
+        if (stage == null) return null; // All the rest requires a graphics context
+        // We want to update frequently to check for resizes, so tell the system to add us as a pulse entity
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         stage.setFullScreen(_isFullscreen);
         stage.setResizable(_resizeable);
         if (_isFullscreen)
@@ -160,6 +163,8 @@ public class Window implements MessageHandler, PulseEntity {
             Rectangle2D screenSize = Screen.getPrimary().getVisualBounds();
             _width = (int)screenSize.getWidth();
             _height = (int)screenSize.getHeight();
+            Engine.getConsoleVariables().find(Constants.SCR_WIDTH).setValue(Integer.toString(_width));
+            Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).setValue(Integer.toString(_height));
         }
         //stage.setResizable(false);
         stage.setTitle(_title);
@@ -183,6 +188,7 @@ public class Window implements MessageHandler, PulseEntity {
 
     @Override
     public void handleMessage(Message message) {
+        if (_headless) return; // Do not process messages when headless
         switch(message.getMessageName())
         {
             case Constants.CONSOLE_VARIABLE_CHANGED:

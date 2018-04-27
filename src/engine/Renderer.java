@@ -32,10 +32,10 @@ public class Renderer implements MessageHandler {
     private TreeMap<Integer, ArrayList<GraphicsEntity>> _drawOrder = new TreeMap<>();
     private Camera _worldCamera = new Camera(); // Start with a default camera
     private Rotate _rotation = new Rotate(0);
-    private ArrayList<Task> _collisionTask;
     private PhysicsSimulation _collision;
-    private volatile boolean _renderedScene = false;
-    private volatile boolean _updatingEntities = false;
+    private volatile boolean _renderedScene;
+    private volatile boolean _updatingEntities;
+    private volatile boolean _headless;
 
     public void init(GraphicsContext gc)
     {
@@ -43,9 +43,10 @@ public class Renderer implements MessageHandler {
         _rotation.setAxis(new Point3D(0, 0, 1)); // In 2D we rotate about the z-axis
         _collision = new PhysicsSimulation();
         _collision.init();
-        _collisionTask = new ArrayList<>();
-        _collisionTask.add(_collision);
         _renderedScene = false;
+        _headless = _gc == null;
+        _renderedScene = false;
+        _updatingEntities = false;
         int worldX = Engine.getConsoleVariables().find(Constants.WORLD_START_X).getcvarAsInt();
         int worldY = Engine.getConsoleVariables().find(Constants.WORLD_START_Y).getcvarAsInt();
         int worldWidth = Engine.getConsoleVariables().find(Constants.WORLD_WIDTH).getcvarAsInt();
@@ -79,7 +80,7 @@ public class Renderer implements MessageHandler {
                 //_updateEntities((Double)message.getMessageData());
                 _updatingEntities = true;
                 _renderedScene = false;
-                Engine.scheduleLogicTasks(_collisionTask, () -> _updatingEntities = false);
+                Engine.scheduleLogicTasks(() -> _updatingEntities = false, _collision);
                 break;
             case Constants.ADD_GRAPHICS_ENTITY:
                 _entities.add((GraphicsEntity) message.getMessageData());
@@ -91,6 +92,7 @@ public class Renderer implements MessageHandler {
                 _entities.clear();
                 break;
             case Constants.REGISTER_TEXTURE: {
+                if (_headless) break; // We are not running with graphics enabled
                 String texture = (String)message.getMessageData();
                 if (!_textures.containsKey(texture)) {
                     try {
@@ -138,11 +140,6 @@ public class Renderer implements MessageHandler {
     {
         if (_updatingEntities) return; // Not done with collisions/movement simulation
         _collision.setDeltaSeconds(deltaSeconds);
-        // Clear the screen
-        _gc.setFill(Color.WHITE);
-        _gc.fillRect(0, 0,
-                Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsFloat(),
-                Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsFloat());
 
         // What values to offset everything in the world by to
         // determine camera-space coordinates
@@ -169,7 +166,7 @@ public class Renderer implements MessageHandler {
         for (Map.Entry<Actor, HashSet<Actor>> entry : collisions.entrySet()) {
             HashSet<Actor> actors = entry.getValue();
             Actor a = entry.getKey();
-            if (a instanceof GraphicsEntity) {
+            if (a instanceof GraphicsEntity && !_headless) {
                 GraphicsEntity entity = (GraphicsEntity)a;
                 location = entity.getTranslationVec();
                 boolean isStatic = entity.isStaticActor();
@@ -204,6 +201,15 @@ public class Renderer implements MessageHandler {
             location.setXYZ(origX, origY, z);
         }
         */
+        if (_headless) {
+            _renderedScene = true; // Make sure this gets set
+            return; // The rest requires a valid graphics context
+        }
+        // Clear the screen
+        _gc.setFill(Color.WHITE);
+        _gc.fillRect(0, 0,
+                Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsFloat(),
+                Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsFloat());
         // Reorder scene as needed so things are drawn in the proper order
         //HashSet<GraphicsEntity> actors = _graphicsEntities.getAllActors();
         HashSet<GraphicsEntity> actors = _graphicsEntities.getActorsWithinArea(0, 0, screenWidth, screenHeight);

@@ -69,13 +69,13 @@ public class TaskManager {
      * Stores the task-counter pairs for easy and thread-safe access.
      */
     private class TaskWrapper {
-        ArrayList<Task> _tasks;
+        Task[] _tasks;
         Counter _counter;
         AtomicInteger _taskIndex;
 
-        public TaskWrapper(ArrayList<Task> tasks, TaskManager manager) {
+        public TaskWrapper(TaskManager manager, Task ... tasks) {
             _tasks = tasks;
-            _counter = new Counter(tasks.size(), manager);
+            _counter = new Counter(tasks.length, manager);
             _taskIndex = new AtomicInteger(0);
         }
 
@@ -85,8 +85,8 @@ public class TaskManager {
 
         public Task getTask() {
             int index = _taskIndex.getAndIncrement();
-            if (index >= _tasks.size()) return null;
-            return _tasks.get(index);
+            if (index >= _tasks.length) return null;
+            return _tasks[index];
         }
     }
 
@@ -160,9 +160,9 @@ public class TaskManager {
      * @param tasks tasks to be executed by the task manager's thread pool
      * @return counter that can be used to wait on the tasks to complete/check if they completed
      */
-    public Counter submitTasks(ArrayList<Task> tasks) {
+    public Counter submitTasks(Task ... tasks) {
         if (!_isRunning) return null;
-        TaskWrapper wrapper = new TaskWrapper(tasks, this);
+        TaskWrapper wrapper = new TaskWrapper(this, tasks);
         _tasks.add(wrapper);
         return wrapper.getCounter();
     }

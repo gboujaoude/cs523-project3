@@ -4,6 +4,7 @@ import engine.Actor;
 import engine.Circle2D;
 import engine.Engine;
 import engine.Message;
+import engine.math.Vector3;
 import javafx.scene.paint.Color;
 
 import java.util.HashSet;
@@ -19,7 +20,9 @@ public class Virus extends Circle2D {
         super(x, y, 5, 5, 1);
         _speed = Engine.getConsoleVariables().find(ModelGlobals.virusSpeed).getcvarAsFloat();
         setColor(_color);
-        setSpeedXY(_speed * _rng.nextDouble(), _speed * _rng.nextDouble());
+        Vector3 vec = new Vector3(_rng.nextDouble(), _rng.nextDouble(), 0);
+        vec.normalizeThis();
+        setSpeedXY(_speed * vec.x(), _speed * vec.y());
     }
 
     @Override

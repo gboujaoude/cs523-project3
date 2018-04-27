@@ -33,20 +33,7 @@ public class EngineLoop {
             _lock.unlock();
         }
         Engine engine = new Engine();
-        JFXPanel panel = new JFXPanel(); // Forces JavaFX to initialize itself
-        Platform.runLater(() ->
-            {
-            engine.start(application);
-            _waitingForEngineInit = false;
-            });
-        // Spin while we're waiting for engine init
-        while (_waitingForEngineInit) {
-            try {
-                Thread.sleep(1);
-            } catch (Exception e) {
-                // Do nothing
-            }
-        }
+        engine.start(application);
         // Now spin while the engine is running
         while (engine._isEngineRunning()) {
             try {

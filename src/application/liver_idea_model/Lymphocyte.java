@@ -84,8 +84,8 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     }
 
     private void _changeSpeedRandomly() {
-        final double speed = 75;
-        final double minSpeed = 50;
+        final double speed = _speed;
+        final double minSpeed = _speed;
         double speedX = speed * _rng.nextDouble() + minSpeed;
         if (_rng.nextDouble() >= 0.5) speedX *= -1;
         double speedY = speed * _rng.nextDouble() + minSpeed;
@@ -96,16 +96,20 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     @Override
     public void onActorOverlapped(Actor actor, HashSet<Actor> actors) {
         super.onActorOverlapped(actor, actors);
+        int numViruses = 0;
+        int numInfected = 0;
         for (Actor collided : actors) {
             if (collided instanceof Virus) {
                 collided.removeFromWorld();
-                System.out.println("TCell: Found virus -> destroying");
+                ++numViruses;
+                //System.out.println("TCell: Found virus -> destroying");
             }
             else if (collided instanceof LiverCell) {
                 LiverCell cell = (LiverCell)collided;
                 if (cell.infected()) {
                     cell.removeFromWorld();
-                    System.out.println("TCell: Found infected cell -> destroying");
+                    ++numInfected;
+                    //System.out.println("TCell: Found infected cell -> destroying");
                 }
             }
             if (collided instanceof Cytokine) {
@@ -128,5 +132,7 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
                 }
             }
         }
+        if (numViruses > 0) System.out.println("Lymphocyte: Found [" + numViruses + "] viruses -> destroying");
+        if (numInfected > 0) System.out.println("Lymphocyte: Found [" + numInfected + "] infected cells -> destroying");
     }
 }
