@@ -178,6 +178,7 @@ public class Filesystem {
                 _handles[index] = new FileHandle(filename, index);
                 _descriptors[index] = new FileDescriptor(_handles[index]);
             }
+            _descriptors[index].incrementRefCount();
             return new VirtualFile(_descriptors[index], _handles[index]);
         }
     }
