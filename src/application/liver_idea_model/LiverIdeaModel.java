@@ -1,6 +1,8 @@
 package application.liver_idea_model;
 
 import application.CameraController;
+import application.library_of_congress.BookKeeper;
+import application.library_of_congress.StickyNotes;
 import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
 import engine.*;
@@ -25,9 +27,12 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private int _numHealthyCells = 0;
     private int _numInfectedCells = 0;
     private double _elapsedSeconds;
+    private double _elapsedRuntime;
+    private double _maxRuntime;
     private DecimalFormat _minuteFormat = new DecimalFormat("00");
     private DecimalFormat _secondFormat = new DecimalFormat("00");
     private DecimalFormat _msFormat = new DecimalFormat("00");
+    private BookKeeper _keeper = new BookKeeper();
 
     @Override
     public void init() {
@@ -45,6 +50,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _invasionTimer.addToWorld();
         _invasionTimer.setColor(_timerColor);
         _invasionTimer.setAsStaticActor(true);
+        _maxRuntime = Engine.getConsoleVariables().find(ModelGlobals.maxRuntime).getcvarAsFloat();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         _registerMessages();
         _signalInterestInMessages();
@@ -141,6 +147,15 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
     @Override
     public void pulse(double deltaSeconds) {
+        _elapsedRuntime += deltaSeconds;
+
+        // Todo save data to record books
+
+        if (_elapsedRuntime > _maxRuntime) {
+            _keeper.addNote(new StickyNotes("Reached max runtime."));
+            shutdown();
+        }
+
         if (_numViruses > 0 || _numInfectedCells > 0) {
             _elapsedSeconds += deltaSeconds;
             double ms = _elapsedSeconds * 1000;
@@ -150,6 +165,14 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             ms -= ((min * 60 * 1000) + (sec * 1000));
             _invasionTimer.setText("Invasion Timer: " + _minuteFormat.format(min) + "." +
                     _secondFormat.format(sec) + "." + _msFormat.format(ms));
+        } else {
+            double ms = _elapsedRuntime * 1000;
+            double sec = Math.floor(_elapsedRuntime);
+            double min = Math.floor(_elapsedRuntime / 60);
+            sec -= (min * 60);
+            ms -= ((min * 60 * 1000) + (sec * 1000));
+            _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
+                    _secondFormat.format(sec) + "." + _msFormat.format(ms)));
         }
     }
 

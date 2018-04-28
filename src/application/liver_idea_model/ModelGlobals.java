@@ -23,6 +23,8 @@ public class ModelGlobals {
 
     public static final String liverCellInitialNum = "livercell_initial_num";
 
+    public static final String maxRuntime = "max_runtime";
+
     /**
      * Message subjects that will be passed around while the simulation is running
      */
