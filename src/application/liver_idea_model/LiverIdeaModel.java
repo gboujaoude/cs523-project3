@@ -35,10 +35,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private DecimalFormat _secondFormat = new DecimalFormat("00");
     private DecimalFormat _msFormat = new DecimalFormat("00");
     private BookKeeper _keeper = new BookKeeper();
-    private RecordBook<Integer> _bookVirusCount = new RecordBook<>("virus-over-time");
-    private RecordBook<Integer> _bookInfectedCount = new RecordBook<>("infected-over-time");
-    private RecordBook<Integer> _bookHealthyCount = new RecordBook<>("healthy-over-time");
-    private RecordBook<Integer> _bookLymphocyteCount = new RecordBook<>("lymphocytes-over-time");
+    private RecordBook _bookVirusCount;
+    private RecordBook _bookInfectedCount;
+    private RecordBook _bookHealthyCount;
+    private RecordBook _bookLymphocyteCount;
 
     @Override
     public void init() {
@@ -100,6 +100,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     public void shutdown() {
         _recordData(-1); // -1 forces bookKeeper to record all data
         _keeper.pushToPaper();
+        _keeper.closeBooks();
         Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
     }
 
@@ -209,15 +210,19 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
         // -1 signals shutdown
         if (_elapsedRecordTime >= 1 || deltaSeconds == -1) {
-            _bookVirusCount.add(_numViruses);
-            _bookInfectedCount.add(_numInfectedCells);
-            _bookHealthyCount.add(_numHealthyCells);
-            _bookLymphocyteCount.add(_numLymphocytes);
+            _bookVirusCount.add(String.valueOf(_numViruses) + "\n");
+            _bookInfectedCount.add(String.valueOf(_numInfectedCells)+ "\n");
+            _bookHealthyCount.add(String.valueOf(_numHealthyCells)+ "\n");
+            _bookLymphocyteCount.add(String.valueOf(_numLymphocytes)+ "\n");
             _elapsedRecordTime = 0;
         }
     }
 
     private void _createBookKeeper() {
+        _bookVirusCount = new RecordBook("virus-over-time");
+        _bookInfectedCount = new RecordBook("infected-over-time");
+        _bookHealthyCount = new RecordBook("healthy-over-time") ;
+        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time");
         _keeper.addBook(_bookVirusCount);
         _keeper.addBook(_bookInfectedCount);
         _keeper.addBook(_bookHealthyCount);

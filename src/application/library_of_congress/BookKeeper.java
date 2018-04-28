@@ -24,6 +24,12 @@ public class BookKeeper {
         }
     }
 
+    public void closeBooks() {
+        for(RecordBook book: records) {
+            book.close();
+        }
+    }
+
     public void addNote(StickyNotes note) {
         notes.add(note);
     }
