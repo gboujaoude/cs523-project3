@@ -56,6 +56,8 @@ public class Constants {
     public static final String INCREMENT_CAMERA_Y_OFFSET = "increment_camera_y_offset";
     // Resets the camera's x and y offset back to their defaults
     public static final String RESET_CAMERA_XY_OFFSET = "reset_camera_xy_offset";
+    // Shuts down the engine
+    public static final String PERFORM_FULL_ENGINE_SHUTDOWN = "perform_full_engine_shutdown";
 
     /**
      * The following are console variables that will be registered at startup

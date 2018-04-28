@@ -186,6 +186,10 @@ public class Window implements MessageHandler, PulseEntity {
         return _gc;
     }
 
+    public void shutdown() {
+        _stage.close();
+    }
+
     @Override
     public void handleMessage(Message message) {
         if (_headless) return; // Do not process messages when headless

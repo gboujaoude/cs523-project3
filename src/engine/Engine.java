@@ -63,6 +63,7 @@ public class Engine implements PulseEntity, MessageHandler {
     private volatile boolean _requiresRestart = false;
     private volatile boolean _headless = false;
     private volatile boolean _initializing = false;
+    private volatile boolean _pendingShutdown = false;
     private Runnable _gameLoop;
 
     // Wrapper around each logic entity
@@ -146,8 +147,9 @@ public class Engine implements PulseEntity, MessageHandler {
             _gameLoop = new Runnable() {
                 @Override
                 public void run() {
-                    if (!_isRunning) {
-                        shutdown(); //System.exit(0); // Need to shut the system down
+                    if (!_isRunning) return;
+                    else if (_pendingShutdown) { // Need to shut the system down
+                        shutdown();
                         return;
                     }
                     try {
@@ -276,6 +278,11 @@ public class Engine implements PulseEntity, MessageHandler {
                 _registeredLogicEntities.remove(entity);
                 break;
             }
+            case Constants.PERFORM_FULL_ENGINE_SHUTDOWN:
+            {
+                _pendingShutdown = true; // Signals to the game loop that it should call shutdown and stop
+                break;
+            }
         }
     }
 
@@ -283,9 +290,11 @@ public class Engine implements PulseEntity, MessageHandler {
     {
         synchronized(this) {
             if (!_isRunning) return; // Not currently running
+            System.err.println("Performing full engine shutdown");
             _isRunning = false;
             _registeredLogicEntities.clear();
             _application.shutdown();
+            _window.shutdown();
             _taskManager.get().stop();
             _isInitialized = false;
         }
@@ -343,6 +352,7 @@ public class Engine implements PulseEntity, MessageHandler {
             getMessagePump().signalInterest(Constants.PERFORM_SOFT_RESET, this);
             getMessagePump().signalInterest(Constants.ADD_LOGIC_ENTITY, this);
             getMessagePump().signalInterest(Constants.REMOVE_LOGIC_ENTITY, this);
+            getMessagePump().signalInterest(Constants.PERFORM_FULL_ENGINE_SHUTDOWN, this);
             if (_taskManager.get() != null) {
                 _taskManager.get().stop();
             }
@@ -440,6 +450,7 @@ public class Engine implements PulseEntity, MessageHandler {
         getMessagePump().registerMessage(new Message(Constants.INCREMENT_CAMERA_X_OFFSET));
         getMessagePump().registerMessage(new Message(Constants.INCREMENT_CAMERA_Y_OFFSET));
         getMessagePump().registerMessage(new Message(Constants.RESET_CAMERA_XY_OFFSET));
+        getMessagePump().registerMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
     }
 
     /**
