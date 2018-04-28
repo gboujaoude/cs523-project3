@@ -2,6 +2,7 @@ package application.liver_idea_model;
 
 import application.CameraController;
 import application.library_of_congress.BookKeeper;
+import application.library_of_congress.RecordBook;
 import application.library_of_congress.StickyNotes;
 import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
@@ -28,11 +29,16 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private int _numInfectedCells = 0;
     private double _elapsedSeconds;
     private double _elapsedRuntime;
+    private double _elapsedRecordTime;
     private double _maxRuntime;
     private DecimalFormat _minuteFormat = new DecimalFormat("00");
     private DecimalFormat _secondFormat = new DecimalFormat("00");
     private DecimalFormat _msFormat = new DecimalFormat("00");
     private BookKeeper _keeper = new BookKeeper();
+    private RecordBook<Integer> _bookVirusCount = new RecordBook<>("virus-over-time");
+    private RecordBook<Integer> _bookInfectedCount = new RecordBook<>("infected-over-time");
+    private RecordBook<Integer> _bookHealthyCount = new RecordBook<>("healthy-over-time");
+    private RecordBook<Integer> _bookLymphocyteCount = new RecordBook<>("lymphocytes-over-time");
 
     @Override
     public void init() {
@@ -53,6 +59,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _maxRuntime = Engine.getConsoleVariables().find(ModelGlobals.maxRuntime).getcvarAsFloat();
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         _registerMessages();
+        _createBookKeeper();
         _signalInterestInMessages();
         Random random = new Random();
         Quadrant quad = QuadrantBuilder.makeQuadrant(0, 10);
@@ -91,7 +98,9 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
     @Override
     public void shutdown() {
-
+        _recordData(-1); // -1 forces bookKeeper to record all data
+        _keeper.pushToPaper();
+        Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
     }
 
     /**
@@ -149,8 +158,6 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     public void pulse(double deltaSeconds) {
         _elapsedRuntime += deltaSeconds;
 
-        // Todo save data to record books
-
         if (_elapsedRuntime > _maxRuntime) {
             _keeper.addNote(new StickyNotes("Reached max runtime."));
             shutdown();
@@ -165,6 +172,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             ms -= ((min * 60 * 1000) + (sec * 1000));
             _invasionTimer.setText("Invasion Timer: " + _minuteFormat.format(min) + "." +
                     _secondFormat.format(sec) + "." + _msFormat.format(ms));
+            _recordData(deltaSeconds);
         } else {
             double ms = _elapsedRuntime * 1000;
             double sec = Math.floor(_elapsedRuntime);
@@ -194,6 +202,26 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         Engine.getMessagePump().signalInterest(ModelGlobals.cellAddedToWorld, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.cellRemovedFromWorld, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.cellInfected, this);
+    }
+
+    private void _recordData(double deltaSeconds) {
+        _elapsedRecordTime += deltaSeconds;
+
+        // -1 signals shutdown
+        if (_elapsedRecordTime >= 1 || deltaSeconds == -1) {
+            _bookVirusCount.add(_numViruses);
+            _bookInfectedCount.add(_numInfectedCells);
+            _bookHealthyCount.add(_numHealthyCells);
+            _bookLymphocyteCount.add(_numLymphocytes);
+            _elapsedRecordTime = 0;
+        }
+    }
+
+    private void _createBookKeeper() {
+        _keeper.addBook(_bookVirusCount);
+        _keeper.addBook(_bookInfectedCount);
+        _keeper.addBook(_bookHealthyCount);
+        _keeper.addBook(_bookLymphocyteCount);
     }
 
     public static void main(String ... args) {
