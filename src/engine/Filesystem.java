@@ -132,6 +132,18 @@ public class Filesystem {
             }
         }
 
+        public void flush() {
+            synchronized (this) {
+                try {
+                    _writer.write(read(_buffer.size()), 0, _buffer.size());
+                    _writer.flush();
+                }
+                catch (Exception e) {
+                    System.err.println("Error writing to " + _handle.getFileName());
+                }
+            }
+        }
+
         public char[] read(int bytes) {
             bytes = bytes > _totalFileSize.get() ? (int)_totalFileSize.get() : bytes;
             _waitForBytes(bytes);

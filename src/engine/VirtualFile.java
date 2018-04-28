@@ -58,8 +58,7 @@ public class VirtualFile {
             if (!_descriptor.isOpen()) {
                 new Thread(() ->
                 {
-                    char[] buffer = _descriptor.read(_descriptor.getFileSize());
-                    _descriptor.write(buffer);
+                    _descriptor.flush();
                 }).start();
             }
         }
