@@ -56,11 +56,12 @@ public class Filesystem {
         public FileDescriptor(FileHandle handle) {
             _handle = handle;
             try {
+                File file = new File(handle.getFileName());
+                file.createNewFile(); // Create if it doesn't exist
                 FileReader fileReader = new FileReader(handle.getFileName());
                 FileWriter fileWriter = new FileWriter(handle.getFileName(), true); // True means append
                 _reader = new BufferedReader(fileReader);
                 _writer = new BufferedWriter(fileWriter);
-                File file = new File(handle.getFileName());
                 _totalFileSize.set(file.length());
                 _isOpen = true;
                 Engine.scheduleLogicTasks(null, () ->
