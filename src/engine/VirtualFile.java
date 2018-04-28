@@ -25,6 +25,11 @@ public class VirtualFile {
         _descriptor.write(c);
     }
 
+    public void add(String str) {
+        _validityCheck();
+        _descriptor.write(str);
+    }
+
     public void addAll(char ... chars) {
         _validityCheck();
         _descriptor.write(chars);
