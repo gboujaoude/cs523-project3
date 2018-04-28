@@ -9,7 +9,6 @@ import java.util.Optional;
 public class RecordBook{
 
     private final String bookName;
-    private ArrayList<String> records = new ArrayList<>();
     private VirtualFile vf;
 
     public RecordBook(String bookName) {
@@ -18,16 +17,11 @@ public class RecordBook{
     }
 
     public void add(String record) {
-        records.add(record);
         vf.add(record);
     }
 
     public String getName() {
         return bookName;
-    }
-
-    public ArrayList<String> getRecords() {
-        return records;
     }
 
     public void close() {
