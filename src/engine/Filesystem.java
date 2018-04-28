@@ -174,7 +174,7 @@ public class Filesystem {
     public VirtualFile open(String filename) {
         synchronized (this) {
             int index = _getHandleIndex(filename);
-            if (!_descriptors[index].isOpen()) {
+            if (_descriptors[index] == null || !_descriptors[index].isOpen()) {
                 _handles[index] = new FileHandle(filename, index);
                 _descriptors[index] = new FileDescriptor(_handles[index]);
             }
