@@ -172,18 +172,24 @@ public class Filesystem {
     private final FileDescriptor[] _descriptors = new FileDescriptor[_maxFileHandles];
 
     public VirtualFile open(String filename) {
-        int index = _getHandleIndex(filename);
-        if (!_descriptors[index].isOpen()) {
-            _handles[index] = new FileHandle(filename, index);
-            _descriptors[index] = new FileDescriptor(_handles[index]);
+        synchronized (this) {
+            int index = _getHandleIndex(filename);
+            if (!_descriptors[index].isOpen()) {
+                _handles[index] = new FileHandle(filename, index);
+                _descriptors[index] = new FileDescriptor(_handles[index]);
+            }
+            return new VirtualFile(_descriptors[index], _handles[index]);
         }
-        return new VirtualFile(_descriptors[index], _handles[index]);
     }
 
     private int _getHandleIndex(String filename) {
         int validIndex = -1;
         for (int i = 0; i < _maxFileHandles; ++i) {
             FileDescriptor descriptor = _descriptors[i];
+            if (descriptor == null) {
+                validIndex = i;
+                continue;
+            }
             FileHandle handle = descriptor.getHandle();
             if (handle.getFileName().equals(filename) && descriptor.isOpen()) {
                 validIndex = i;
