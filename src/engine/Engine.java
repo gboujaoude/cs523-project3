@@ -369,7 +369,7 @@ public class Engine implements PulseEntity, MessageHandler {
                     if (_initialStage != null) _initialStage.close();
                     _initialStage = new Stage();
                     _initialStage.show();
-                    _initialStage.setOnCloseRequest((value) -> shutdown());
+                    _initialStage.setOnCloseRequest((value) -> _pendingShutdown = true);
                     GraphicsContext gc = _window.init(_initialStage);
                     _renderer.init(gc);
                     _application.init();
