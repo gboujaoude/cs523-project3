@@ -11,7 +11,7 @@ import engine.EngineLoop;
 public class LayeredImmuneSystem implements ApplicationEntryPoint {
     @Override
     public void init() {
-        Engine.getConsoleVariables().loadConfigFile("src/application/layered_immune_sys_test/layered_sys.cfg");
+        Engine.getConsoleVariables().loadConfigFile("src/resources/layered_immune_sys_test/layered_sys.cfg");
         new CameraController().enableMouseInputComponent();
         Quadrant quadrant = QuadrantBuilder.makeQuadrant(0, 30);
         for (int i = 0; i < 1000; ++i) {

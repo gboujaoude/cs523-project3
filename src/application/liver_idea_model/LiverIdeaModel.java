@@ -31,7 +31,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
     @Override
     public void init() {
-        Engine.getConsoleVariables().loadConfigFile("src/application/liver_idea_model/liver_idea_model.cfg");
+        Engine.getConsoleVariables().loadConfigFile("src/resources/liver_idea_model.cfg");
         new CameraController().enableMouseInputComponent();
         _lymphocyteDisplay.addToWorld();
         _lymphocyteDisplay.setColor(_lymphocyteColor);
