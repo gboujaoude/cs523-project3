@@ -54,6 +54,7 @@ public class Engine implements PulseEntity, MessageHandler {
     private Renderer _renderer;
     private ConcurrentHashMap<TaskManager.Counter, Callback> _taskCallbackMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<LogicEntity, LogicEntityTask> _registeredLogicEntities = new ConcurrentHashMap<>();
+    private Filesystem _fileSys;
     private volatile int _maxFrameRate;
     private final int _maxMessageQueueProcessingRate = 240; // Measures in Hertz, i.e. times per second
     private volatile long _lastMessageQueueFrameTimeMS;
@@ -122,6 +123,13 @@ public class Engine implements PulseEntity, MessageHandler {
     public static ConsoleVariables getConsoleVariables()
     {
         return _engine._cvarSystem.get();
+    }
+
+    /**
+     * Returns the engine's file system for opening and manipulating files.
+     */
+    public static Filesystem getFileSystem() {
+        return _engine._fileSys;
     }
 
     /**
@@ -314,6 +322,7 @@ public class Engine implements PulseEntity, MessageHandler {
             //_taskManager = new TaskManager();
             _window = new Window();
             _renderer = new Renderer();
+            _fileSys = new Filesystem();
             _isRunning = true;
         }
     }
