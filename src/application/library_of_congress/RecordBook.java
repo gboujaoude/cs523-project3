@@ -1,9 +1,11 @@
 package application.library_of_congress;
 
+import engine.ConsoleVariable;
 import engine.Engine;
 import engine.FileHandle;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +33,11 @@ public class RecordBook{
         for (int i = 0; i < record.length(); ++i) buffer.add(record.charAt(i));
     }
 
-    public void addList(List list) {
+    public void recordConfig(LinkedList<ConsoleVariable> list) {
         for(int i = 0; i < list.size(); i++) {
-            add(list.get(i).toString() +"\n");
+            String name = list.get(i).getcvarName();
+            String value = list.get(i).getcvarValue();
+            add("+ " + name + " = " + value + "\n");
         }
     }
 

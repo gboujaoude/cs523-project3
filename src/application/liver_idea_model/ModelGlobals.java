@@ -44,4 +44,6 @@ public class ModelGlobals {
     // to let the system know that the virus was not successfully contained and has
     // entered the blood stream
     public static final String virusLeftLiver = "virus_left_liver";
+
+    public static final String memo = "memo";
 }
