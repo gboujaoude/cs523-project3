@@ -214,11 +214,12 @@ public class Filesystem {
                 throw new RuntimeException("Unable to open file - maximum number of open files exceeded");
             }
             FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            boolean result = true;
             if (!descriptor.isOpen()) {
-                descriptor.open(createIfNonexistent);
+                result = descriptor.open(createIfNonexistent);
                 descriptor.incrementRefCount(); // Make sure this gets incremented
             }
-            return handle;
+            return result ? handle : null; // Check the result of open
         }
     }
 
