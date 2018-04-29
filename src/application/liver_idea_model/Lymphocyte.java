@@ -103,14 +103,15 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
             if (collided instanceof Virus) {
                 collided.removeFromWorld();
                 ++numViruses;
-                //System.out.println("TCell: Found virus -> destroying");
+                Engine.getMessagePump().sendMessage(new Message(ModelGlobals.virusSquashedLymphocyte));
+                //System.out.println("Lymphocyte: Found virus -> destroying");
             }
             else if (collided instanceof LiverCell) {
                 LiverCell cell = (LiverCell)collided;
                 if (cell.infected()) {
                     cell.removeFromWorld();
                     ++numInfected;
-                    //System.out.println("TCell: Found infected cell -> destroying");
+                    //System.out.println("Lymphocyte: Found infected cell -> destroying");
                 }
             }
             if (collided instanceof Cytokine) {

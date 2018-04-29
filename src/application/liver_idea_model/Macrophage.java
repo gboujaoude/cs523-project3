@@ -56,6 +56,7 @@ public class Macrophage extends Circle2D implements PulseEntity{
             } else if (curr instanceof Virus) {
                 curr.removeFromWorld();
                 ++numViruses;
+                Engine.getMessagePump().sendMessage(new Message(ModelGlobals.virusSquashedMacrophage));
                 //System.out.println("Macrophage: Found virus -> destroying");
             }
         }
