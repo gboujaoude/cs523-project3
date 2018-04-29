@@ -346,6 +346,7 @@ public class Engine implements PulseEntity, MessageHandler {
     private void _init()
     {
         synchronized(this) {
+            _fileSys.init(); // Make sure this gets initialized first
             getConsoleVariables().loadConfigFile("src/resources/engine.cfg");
             _registerDefaultCVars();
             _maxFrameRate = Math.abs(Engine.getConsoleVariables().find(Constants.ENG_LIMIT_FPS).getcvarAsInt());
@@ -372,7 +373,6 @@ public class Engine implements PulseEntity, MessageHandler {
             _lastFrameTimeMS = System.currentTimeMillis();
             _lastMessageQueueFrameTimeMS = System.currentTimeMillis();
             _maxFrameRate = getConsoleVariables().find(Constants.ENG_MAX_FPS).getcvarAsInt();
-            _fileSys.init();
             if (!_headless) {
                 _initializing = true; // Let's the main game loop know to spin while delayed initialization takes place
                 new JFXPanel(); // This forces JavaFX to initialize itself
