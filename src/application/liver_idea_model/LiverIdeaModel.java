@@ -53,7 +53,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         label.setLayoutX(25);
         label.setLayoutY(200);
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_UI_ELEMENT, label));
-        Slider slider = new Slider(0,10,1);
+        Slider slider = new Slider(0,5,1);
         slider.setBlockIncrement(1);
         slider.setSnapToTicks(true);
         slider.setShowTickLabels(true);
