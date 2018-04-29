@@ -2,228 +2,340 @@ package engine;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Very simple file system for opening/reading/writing files. All files
- * are read and written to memory, and only when the last reference to
- * that file closes itself will that file be transferred to disk.
+ * The file system provides a very thin abstraction layer between the
+ * engine and the underlying Java file I/O.
  *
  * @author Justin Hall
  */
 public class Filesystem {
-    class FileHandle {
-        private String _file = "";
-        private int _handle;
+    private static final int _maxFileHandles = 100;
+    private final FileHandle[] _handles = new FileHandle[_maxFileHandles];
+    private final FileDescriptor[] _descriptors = new FileDescriptor[_maxFileHandles];
+    private final ArrayList<Character> _tempBuffer = new ArrayList<>(100);
+    private String _cwd;
+    private volatile boolean _isInitialized = false;
 
-        public FileHandle(String file, int handle) {
-            _file = file;
-            _handle = handle;
-        }
-
-        public String getFileName() {
-            return _file;
-        }
-
-        public int getHandle() {
-            return _handle;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            return other instanceof FileHandle && other.hashCode() == hashCode();
-        }
-
-        @Override
-        public int hashCode() {
-            return Integer.hashCode(_handle);
-        }
-    }
-
+    // Package-private
     class FileDescriptor {
         private FileHandle _handle;
-        //private FileReader _file;
-        private BufferedReader _reader;
         private BufferedWriter _writer;
-        private ArrayList<Character> _buffer = new ArrayList<>(100);
-        private AtomicInteger _refCount = new AtomicInteger(0);
-        private AtomicLong _currFileSize = new AtomicLong(0);
-        private AtomicLong _totalFileSize = new AtomicLong(0);
+        private BufferedReader _reader;
+        private final ArrayList<Character> _buffer = new ArrayList<>(100);
+        private final AtomicInteger _refCount = new AtomicInteger(0);
+        private final ReentrantLock _lock = new ReentrantLock();
         private volatile boolean _isOpen = false;
 
         public FileDescriptor(FileHandle handle) {
             _handle = handle;
+        }
+
+        public boolean open(boolean createIfNonexistent) {
             try {
-                File file = new File(handle.getFileName());
-                file.createNewFile(); // Create if it doesn't exist
-                FileReader fileReader = new FileReader(handle.getFileName());
-                FileWriter fileWriter = new FileWriter(handle.getFileName(), true); // True means append
-                _reader = new BufferedReader(fileReader);
-                _writer = new BufferedWriter(fileWriter);
-                _totalFileSize.set(file.length());
-                _isOpen = true;
-                Engine.scheduleLogicTasks(null, () ->
-                {
-                    String line;
-                    while (true) {
-                        try {
-                            line = _reader.readLine();
-                            if (line == null || line.length() == 0) break; // EOF
-                            this.write(line);
-                        }
-                        catch (Exception e) {
-                            // Do nothing
-                        }
+                lock();
+                if (_isOpen) return true; // Already open
+                try {
+                    if (createIfNonexistent) {
+                        File f = new File(_handle.getFullNameAndPath());
+                        f.createNewFile();
                     }
-                });
+                    FileWriter fileWriter = new FileWriter(_handle.getFullNameAndPath());
+                    FileReader fileReader = new FileReader(_handle.getFullNameAndPath());
+                    _writer = new BufferedWriter(fileWriter);
+                    _reader = new BufferedReader(fileReader);
+                    _refCount.set(0);
+                    _isOpen = true;
+                    _buffer.clear();
+                } catch (Exception e) {
+                    System.err.println("Unable to open " + _handle.getFullNameAndPath());
+                }
+                return _isOpen;
             }
-            catch (Exception e) {
-                System.err.println("Could not open " + handle.getFileName());
+            finally {
+                unlock();
             }
+        }
+
+        public boolean close() {
+            if (!_isOpen) return false;
+            return _flushAndClose();
+        }
+
+        public void lock() {
+            _lock.lock();
+        }
+
+        public void unlock() {
+            _lock.unlock();
         }
 
         public void incrementRefCount() {
-            _refCount.addAndGet(1);
+            _refCount.getAndIncrement();
         }
 
         public void decrementRefCount() {
-            _refCount.addAndGet(-1);
+            _refCount.getAndDecrement();
         }
 
-        public boolean isOpen() {
-            return _refCount.get() != 0 && _isOpen;
-        }
-
-        public void write(char ... chars) {
-            synchronized (this) {
-                for (int i = 0; i < chars.length; ++i) {
-                    _write(chars[i]);
-                }
-            }
-        }
-
-        public void write(Collection<Character> chars) {
-            synchronized (this) {
-                for (Character c : chars) _write(c);
-            }
-        }
-
-        public void write(String str) {
-            synchronized (this) {
-                for (int i = 0; i < str.length(); ++i) {
-                    _write(str.charAt(i));
-                }
-            }
-        }
-
-        public char get(int index) {
-            if (index >= _totalFileSize.get()) throw new IndexOutOfBoundsException();
-            _waitForBytes(index);
-            synchronized (this) {
-                return _buffer.get(index);
-            }
-        }
-
-        public char set(int index, char c) {
-            if (index >= _totalFileSize.get()) throw new IndexOutOfBoundsException();
-            _waitForBytes(index);
-            synchronized (this) {
-                return _buffer.set(index, c);
-            }
-        }
-
-        public void flush() {
-            synchronized (this) {
-                try {
-                    _writer.write(read(_buffer.size()), 0, _buffer.size());
-                    _writer.flush();
-                }
-                catch (Exception e) {
-                    System.err.println("Error writing to " + _handle.getFileName());
-                }
-            }
-        }
-
-        public char[] read(int bytes) {
-            bytes = bytes > _totalFileSize.get() ? (int)_totalFileSize.get() : bytes;
-            _waitForBytes(bytes);
-            if (bytes < 0) throw new RuntimeException("Critical error - bytes less than 0");
-            char[] buffer = new char[bytes];
-            for (int i = 0; i < bytes; ++i) buffer[i] = _buffer.get(i);
-            return buffer;
+        public int getRefCount() {
+            return _refCount.get();
         }
 
         public FileHandle getHandle() {
             return _handle;
         }
 
-        public int getFileSize() {
-            return (int)_totalFileSize.get();
-        }
-
-        private void _waitForBytes(int bytes) {
+        public boolean synchronousWrite(Collection<Character> buffer) {
             try {
-                while (bytes > _currFileSize.get()) {
-                    Thread.sleep(1);
+                lock();
+                if (!isOpen()) return false;
+                for (Character c : buffer) _buffer.add(c);
+                return true;
+            }
+            finally {
+                unlock();
+            }
+        }
+
+        public boolean synchronousRead(Collection<Character> buffer) {
+            try {
+                lock();
+                if (!isOpen()) return false;
+                buffer.clear();
+                try {
+                    String line;
+                    while ((line = _reader.readLine()) != null && line.length() != 0) {
+                        for (int i = 0; i < line.length(); ++i) buffer.add(line.charAt(i));
+                    }
                 }
+                catch (Exception e) {
+                    return false;
+                }
+                buffer.addAll(_buffer);
+                return true;
             }
-            catch (Exception e) {
-
+            finally {
+                unlock();
             }
         }
 
-        private void _write(Character c) {
-            _buffer.add(c);
-            _currFileSize.getAndIncrement();
-            //if (_currFileSize.get() >= _totalFileSize.get()) _totalFileSize.getAndIncrement();
+        public boolean isOpen() {
+            return _refCount.get() > 0 && _isOpen;
         }
-    }
 
-    private final int _maxFileHandles = 100;
-    private final FileHandle[] _handles = new FileHandle[_maxFileHandles];
-    private final FileDescriptor[] _descriptors = new FileDescriptor[_maxFileHandles];
-
-    public VirtualFile open(String filename) {
-        synchronized (this) {
-            int index = _getHandleIndex(filename);
-            if (_descriptors[index] == null || !_descriptors[index].isOpen()) {
-                _handles[index] = new FileHandle(filename, index);
-                _descriptors[index] = new FileDescriptor(_handles[index]);
-            }
-            _descriptors[index].incrementRefCount();
-            return new VirtualFile(_descriptors[index], _handles[index]);
+        @Override
+        public boolean equals(Object other) {
+            return (other instanceof FileDescriptor) && _handle.equals(other);
         }
-    }
 
-    private int _getHandleIndex(String filename) {
-        int validIndex = -1;
-        for (int i = 0; i < _maxFileHandles; ++i) {
-            FileDescriptor descriptor = _descriptors[i];
-            if (descriptor == null) {
-                validIndex = i;
-                continue;
-            }
-            FileHandle handle = descriptor.getHandle();
-            if (handle.getFileName().equals(filename) && descriptor.isOpen()) {
-                validIndex = i;
-                break;
-            }
-            else if (!descriptor.isOpen()) validIndex = i;
+        @Override
+        public int hashCode() {
+            return _handle.hashCode();
         }
-        return validIndex;
+
+        private boolean _flushAndClose() {
+            try {
+                lock();
+                if (!_isOpen) return false; // Already closed
+                _isOpen = false;
+                try {
+                    char[] buffer = new char[_buffer.size()];
+                    for (int i = 0; i < _buffer.size(); ++i) buffer[i] = _buffer.get(i);
+                    _writer.write(buffer);
+                    _writer.close();
+                    _reader.close();
+                }
+                catch (Exception e) {
+                    return false;
+                }
+                return true;
+            }
+            finally {
+                unlock();
+            }
+        }
     }
 
     // Package-private
     Filesystem() { }
 
-    // Package-private
-    FileDescriptor _findFileDescriptor(FileHandle handle) {
-        for (int i = 0; i < _maxFileHandles; ++i) {
-            FileDescriptor descriptor = _descriptors[i];
-            if (descriptor.isOpen() && descriptor.getHandle() == handle) return descriptor;
+    /**
+     * Initializes the file system for first use. This will probably only be called by
+     * the engine module.
+     */
+    public void init() {
+        synchronized (this) {
+            if (_isInitialized) return; // Already initialized
+            _isInitialized = true;
+            _cwd = System.getProperty("user.dir");
+            StringBuilder str = new StringBuilder(_cwd.length());
+            // Replace all '\\' with '/'
+            for (int i = 0; i < _cwd.length(); ++i) {
+                char c = _cwd.charAt(i);
+                str.append(c == '\\' ? '/' : c);
+            }
+            _cwd = str.toString();
+            for (int i = 0; i < _maxFileHandles; ++i) {
+                _handles[i] = null;
+                _descriptors[i] = null;
+            }
         }
-        return null;
+    }
+
+    public void shutdown() {
+        synchronized (this) {
+            if (!_isInitialized) return; // Already shutdown
+            _isInitialized = false;
+            // Close all open file descriptors
+            for (int i = 0; i < _maxFileHandles; ++i) {
+                FileDescriptor descriptor = _descriptors[i];
+                if (descriptor != null && descriptor.isOpen()) descriptor.close();
+            }
+        }
+    }
+
+    /**
+     * Opens a new file for reading/writing.
+     * @param file file to open
+     * @param createIfNonexistent true if the file should be created if not found
+     * @return a valid FileHandle reference upon success and null if it failed for any reason
+     */
+    public FileHandle open(String file, boolean createIfNonexistent) {
+        synchronized (this) {
+            file = _preprocessFile(file);
+            FileHandle handle = _findValidHandle(file);
+            if (handle == null) {
+                throw new RuntimeException("Unable to open file - maximum number of open files exceeded");
+            }
+            FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            if (!descriptor.isOpen()) {
+                descriptor.open(createIfNonexistent);
+                descriptor.incrementRefCount(); // Make sure this gets incremented
+            }
+            return handle;
+        }
+    }
+
+    /**
+     * Closes an open file. This will ensure that it is properly flushed to disk
+     * once the last file handle referencing that file is closed.
+     * @param handle valid file handle returned from open()
+     * @return true if the handle was open and then successfully closed or false if the
+     *         file handle was already closed/did not reference a valid file
+     */
+    public boolean close(FileHandle handle) {
+        synchronized (this) {
+            FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            if (descriptor == null || !descriptor.isOpen()) return false;
+            descriptor.decrementRefCount();
+            int refCount = descriptor.getRefCount();
+            boolean result = true;
+            if (refCount == 0) {
+                result = descriptor.close();
+                _handles[handle.getHandle()] = null;
+                _descriptors[handle.getHandle()] = null;
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Performs a synchronous write operation on the file referenced by the given handle
+     * and the contents of the String buffer. It is synchronous in that it will block
+     * whatever thread calls it until the operation completes.
+     * @param handle valid file handle returned from open()
+     * @param buffer buffer containing the data to write
+     * @return true if the write was successful and false if not
+     */
+    public boolean synchronousWrite(FileHandle handle, String buffer) {
+        synchronized (this) {
+            FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            if (descriptor == null || !descriptor.isOpen()) return false;
+            _tempBuffer.clear();
+            for (int i = 0; i < buffer.length(); ++i) _tempBuffer.add(buffer.charAt(i));
+            return descriptor.synchronousWrite(_tempBuffer);
+        }
+    }
+
+    /**
+     * Performs a synchronous write operation on the file referenced by the given handle
+     * and the contents of the Collection<Character> buffer. It is synchronous in that it will block
+     * whatever thread calls it until the operation completes.
+     * @param handle valid file handle returned from open()
+     * @param buffer buffer containing the data to write
+     * @return true if the write was successful and false if not
+     */
+    public boolean synchronousWrite(FileHandle handle, Collection<Character> buffer) {
+        synchronized (this) {
+            FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            if (descriptor == null || !descriptor.isOpen()) return false;
+            return descriptor.synchronousWrite(buffer);
+        }
+    }
+
+    /**
+     * Reads the entire contents of the file to the given buffer. It is synchronous in that it
+     * will block whatever thread calls this until the operation completes.
+     * @param handle valid file handle returned from open()
+     * @param buffer buffer containing the data to write
+     * @return true if the read was successful and false if not
+     */
+    public boolean synchronousRead(FileHandle handle, Collection<Character> buffer) {
+        synchronized (this) {
+            FileDescriptor descriptor = _descriptors[handle.getHandle()];
+            if (descriptor == null || !descriptor.isOpen()) return false;
+            return descriptor.synchronousRead(buffer);
+        }
+    }
+
+    private String _preprocessFile(String file) {
+        StringBuilder str = new StringBuilder(file.length());
+        // Replace all '\\' with '/'
+        for (int i = 0; i < file.length(); ++i) {
+            char c = file.charAt(i);
+            str.append(c == '\\' ? '/' : c);
+        }
+        file = str.toString();
+        FileHandle handle = new FileHandle(file,-1);
+        if (handle.getFullNameAndPath().contains(_cwd)) return file;
+        char firstChar = file.charAt(0);
+        return (firstChar == '/') ? _cwd + file : _cwd + "/" + file;
+    }
+
+    private FileHandle _findValidHandle(String file) {
+        FileDescriptor descriptor;
+        int index = 0;
+        for (int i = 0; i < _maxFileHandles; ++i) {
+            descriptor = _descriptors[i];
+            if (descriptor != null) {
+                try {
+                    descriptor.lock();
+                    // Found a matching file descriptor/handle combo
+                    if (descriptor.getHandle().getFullNameAndPath().equals(file)) {
+                        index = i;
+                        descriptor.incrementRefCount();
+                        break;
+                    }
+                }
+                finally {
+                    descriptor.unlock();
+                }
+            }
+            else index = i;
+        }
+        FileHandle handle = _handles[index];
+        if (handle == null) {
+            handle = new FileHandle(file, index);
+            descriptor = new FileDescriptor(handle);
+            _handles[index] = handle;
+            _descriptors[index] = descriptor;
+        }
+        return handle;
     }
 }

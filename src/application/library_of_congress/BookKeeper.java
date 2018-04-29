@@ -1,7 +1,7 @@
 package application.library_of_congress;
 
 import engine.Engine;
-import engine.VirtualFile;
+import engine.FileHandle;
 
 import java.util.ArrayList;
 
@@ -25,10 +25,15 @@ public class BookKeeper {
             book.close();
         }
 
-        VirtualFile vfSticky = Engine.getFileSystem().open("StickyNotes.txt");
+        FileHandle vfSticky = Engine.getFileSystem().open("StickyNotes.txt", true);
+        ArrayList<Character> buffer = new ArrayList<>(100);
         for (StickyNotes note: notes) {
-            vfSticky.add(note + "\n");
+            String msg = note.getMsg();
+            for (int i = 0; i < msg.length(); ++i) buffer.add(msg.charAt(i));
+            buffer.add('\n');
         }
+        Engine.getFileSystem().synchronousWrite(vfSticky, buffer);
+        Engine.getFileSystem().close(vfSticky);
     }
 
     public void addNote(StickyNotes note) {

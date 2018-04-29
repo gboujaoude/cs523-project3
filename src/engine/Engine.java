@@ -304,6 +304,7 @@ public class Engine implements PulseEntity, MessageHandler {
             _application.shutdown();
             _window.shutdown();
             _taskManager.get().stop();
+            _fileSys.shutdown();
             _isInitialized = false;
         }
     }
@@ -371,6 +372,7 @@ public class Engine implements PulseEntity, MessageHandler {
             _lastFrameTimeMS = System.currentTimeMillis();
             _lastMessageQueueFrameTimeMS = System.currentTimeMillis();
             _maxFrameRate = getConsoleVariables().find(Constants.ENG_MAX_FPS).getcvarAsInt();
+            _fileSys.init();
             if (!_headless) {
                 _initializing = true; // Let's the main game loop know to spin while delayed initialization takes place
                 new JFXPanel(); // This forces JavaFX to initialize itself
@@ -417,6 +419,7 @@ public class Engine implements PulseEntity, MessageHandler {
             //_messageSystem.set(new MessagePump());
             getMessagePump().clearAllMessageHandlers();
             _application.shutdown();
+            _fileSys.shutdown();
             _init();
         }
     }

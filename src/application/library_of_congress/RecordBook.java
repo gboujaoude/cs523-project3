@@ -1,7 +1,7 @@
 package application.library_of_congress;
 
 import engine.Engine;
-import engine.VirtualFile;
+import engine.FileHandle;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -9,15 +9,16 @@ import java.util.Optional;
 public class RecordBook{
 
     private final String bookName;
-    private VirtualFile vf;
+    private FileHandle handle;
+    private ArrayList<Character> buffer = new ArrayList<>(100);
 
     public RecordBook(String bookName) {
         this.bookName = Optional.ofNullable(bookName).orElse("unknown-record-name");
-        this.vf = Engine.getFileSystem().open(this.bookName + ".txt");
+        this.handle = Engine.getFileSystem().open(this.bookName + ".txt", true);
     }
 
     public void add(String record) {
-        vf.add(record);
+        for (int i = 0; i < record.length(); ++i) buffer.add(record.charAt(i));
     }
 
     public String getName() {
@@ -25,6 +26,7 @@ public class RecordBook{
     }
 
     public void close() {
-        vf.close();
+        Engine.getFileSystem().synchronousWrite(handle, buffer);
+        Engine.getFileSystem().close(handle);
     }
 }
