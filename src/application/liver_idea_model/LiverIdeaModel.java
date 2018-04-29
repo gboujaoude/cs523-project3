@@ -194,6 +194,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             ms -= ((min * 60 * 1000) + (sec * 1000));
             _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
                     _secondFormat.format(sec) + "." + _msFormat.format(ms)));
+            _recordData(deltaSeconds);
+            shutdown();
         }
     }
 
