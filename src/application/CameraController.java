@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class CameraController extends MouseInputComponent implements MessageHandler {
     private double _scrollAmount = 1.0;
-    private double _deltaScroll = 1.1;
+    private double _deltaScroll = 1.4;
     private double _lastMouseX = 0.0;
     private double _lastMouseY = 0.0;
     private double _currentXOffset = 0.0;
@@ -37,8 +37,6 @@ public class CameraController extends MouseInputComponent implements MessageHand
         _lastMouseX = mouseX;
         _lastMouseY = mouseY;
         if (_isPressed) {
-            _currentXOffset += amountX * 5.0;
-            _currentYOffset += amountY * 5.0;
             Engine.getMessagePump().sendMessage(new Message(Constants.INCREMENT_CAMERA_X_OFFSET, amountX * 5.0));
             Engine.getMessagePump().sendMessage(new Message(Constants.INCREMENT_CAMERA_Y_OFFSET, amountY * 5.0));
         }
@@ -51,17 +49,22 @@ public class CameraController extends MouseInputComponent implements MessageHand
         double scale = zoomIn ? _deltaScroll : 1 / _deltaScroll;
         double screenWidth = Engine.getConsoleVariables().find(Constants.SCR_WIDTH).getcvarAsFloat();
         double screenHeight = Engine.getConsoleVariables().find(Constants.SCR_HEIGHT).getcvarAsFloat();
-        double originX = _currentXOffset / 2;
-        double originY = _currentYOffset / 2;
+        double originX = _currentXOffset;// / 2;
+        double originY = _currentYOffset;// / 2;
 
         double oldScroll = _scrollAmount;
         _scrollAmount *= scale;
-        _scrollAmount = Math.max(0.1, Math.min(5.0, _scrollAmount));
-        if (oldScroll != _scrollAmount) {
-            Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_X_OFFSET, _currentXOffset + direction * (_lastMouseX - originX) * (1.0 - scale)));
-            Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_Y_OFFSET, _currentYOffset + direction * (_lastMouseY - originY) * (1.0 - scale)));
-            Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_ZOOM, _scrollAmount));
-        }
+        //_scrollAmount = Math.max(0.5, Math.min(5.0, _scrollAmount));
+        //if (oldScroll != _scrollAmount && !(_lastMouseX == originX || _lastMouseY == originY)) {
+        double offsetX = (_lastMouseX - originX) * (1.0 - scale);
+        double offsetY = (_lastMouseY - originY) * (1.0 - scale);
+        //System.out.println(offsetX + " " + offsetY);
+        _currentXOffset = _currentXOffset + offsetX;
+        _currentYOffset = _currentYOffset + offsetY;
+        Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_X_OFFSET, _currentXOffset));
+        Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_Y_OFFSET, _currentYOffset));
+        Engine.getMessagePump().sendMessage(new Message(Constants.SET_CAMERA_ZOOM, _scrollAmount));
+        //}
     }
     /**
     public void scrolled(double direction) {
@@ -101,8 +104,8 @@ public class CameraController extends MouseInputComponent implements MessageHand
             case Constants.CAMERA_OFFSET_CHANGED:
             {
                 Pair<Double, Double> offsets = (Pair<Double, Double>)message.getMessageData();
-                //_currentXOffset = offsets.getKey();
-                //_currentYOffset = offsets.getValue();
+                _currentXOffset = offsets.getKey();
+                _currentYOffset = offsets.getValue();
                 break;
             }
         }

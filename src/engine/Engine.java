@@ -432,6 +432,8 @@ public class Engine implements PulseEntity, MessageHandler {
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.CALCULATE_MOVEMENT, "true", "true"));
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.NUM_LOGIC_THREADS, "2", "2"));
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.HEADLESS, "false", "false"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ALLOW_MOUSE_MOVE, "true", "true"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ALLOW_MOUSE_SCROLL, "true", "true"));
     }
 
     private void _registerMessageTypes()

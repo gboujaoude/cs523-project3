@@ -38,6 +38,8 @@ public class Window implements MessageHandler, PulseEntity {
     private HashSet<MouseInputComponent> _mouseInputComponents;
     private InternalMouseInputManager _mouseInputManager;
     private volatile boolean _headless;
+    private volatile boolean _captureMouseMove;
+    private volatile boolean _captureMouseScroll;
 
     private class MouseSnapshot {
         boolean moved = false;
@@ -147,6 +149,8 @@ public class Window implements MessageHandler, PulseEntity {
         _title = cvars.find(Constants.SCR_TITLE).getcvarValue();
         _mouseInputComponents = new HashSet<>();
         _mouseInputManager = new InternalMouseInputManager();
+        _captureMouseMove = Engine.getConsoleVariables().find(Constants.ALLOW_MOUSE_MOVE).getcvarAsBool();
+        _captureMouseScroll = Engine.getConsoleVariables().find(Constants.ALLOW_MOUSE_SCROLL).getcvarAsBool();
 
         // Register window-specific messages
         Engine.getMessagePump().registerMessage(new Message(W_REGISTER_MOUSE_INPUT_COMPONENT));
@@ -223,6 +227,12 @@ public class Window implements MessageHandler, PulseEntity {
                 {
                     _stage.setResizable(true);
                 }
+                else if (cvar.getcvarName().equals(Constants.ALLOW_MOUSE_MOVE)) {
+                    _captureMouseMove = cvar.getcvarAsBool();
+                }
+                else if (cvar.getcvarName().equals(Constants.ALLOW_MOUSE_SCROLL)) {
+                    _captureMouseScroll = cvar.getcvarAsBool();
+                }
                 break;
             }
             case Constants.ADD_UI_ELEMENT:
@@ -266,8 +276,8 @@ public class Window implements MessageHandler, PulseEntity {
         for (MouseInputComponent component : _mouseInputComponents) {
             if (snapshot.pressedDown) component.mousePressedDown(snapshot.x, snapshot.y, snapshot.button);
             if (snapshot.released) component.mouseReleased(snapshot.x, snapshot.y, snapshot.button);
-            if (snapshot.moved) component.mouseMoved(snapshot.movedX, snapshot.movedY, snapshot.x, snapshot.y);
-            if (snapshot.scrolled) component.scrolled(snapshot.scrollDirection);
+            if (snapshot.moved && _captureMouseMove) component.mouseMoved(snapshot.movedX, snapshot.movedY, snapshot.x, snapshot.y);
+            if (snapshot.scrolled && _captureMouseScroll) component.scrolled(snapshot.scrollDirection);
         }
     }
 }

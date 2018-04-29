@@ -107,4 +107,8 @@ public class Constants {
     // If headless, support for drawing graphics will not be initialized. RenderEntities will
     // still be updated once per loop, but they will not be rendered anywhere.
     public static final String HEADLESS = "headless";
+    // Allows you to specify whether or not mouse move events should be captured
+    public static final String ALLOW_MOUSE_MOVE = "allow_mouse_move";
+    // Allows you to specify whether or not mouse scroll events should be captured
+    public static final String ALLOW_MOUSE_SCROLL = "allow_mouse_scroll";
 }

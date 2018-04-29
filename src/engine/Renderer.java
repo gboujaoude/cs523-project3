@@ -304,11 +304,8 @@ public class Renderer implements MessageHandler {
 
         //QuadTree<ActorGraph> actors = _collision.getLatestQuadTree();
         //for (GraphicsEntity entity : _entities)
-        for (ActorGraph actor : graphicsEntities)
+        for (GraphicsEntity entity : graphicsEntities)
         {
-            GraphicsEntity entity;
-            if (actor instanceof GraphicsEntity) entity = (GraphicsEntity)actor;
-            else continue;
             int depth = (int)entity.getDepth() * -1; // * -1 because if the depth is negative it needs to come
             // later in the list so that it gets drawn last and
             // will then appear to be on top of other objects
