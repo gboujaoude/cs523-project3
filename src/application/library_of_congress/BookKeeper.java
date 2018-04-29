@@ -28,7 +28,7 @@ public class BookKeeper {
         if (notes.size() == 0) {
             notes.add(new StickyNotes("No notes."));
         }
-        RecordBook recordBook = new RecordBook("sticky-notes",time);
+        RecordBook recordBook = new RecordBook("sticky-notes",time,"txt");
         for(StickyNotes note : notes) {
             recordBook.add(note.getMsg() +"\n");
         }

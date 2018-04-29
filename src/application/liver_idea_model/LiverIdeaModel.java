@@ -32,6 +32,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private int _numHealthyCells = 0;
     private int _numInfectedCells = 0;
     private int _numLeftLiver = 0;
+    private int _numSquashedMacrophage = 0;
+    private int _numSquashedLymphocyte = 0;
     private double _elapsedSeconds;
     private double _elapsedRuntime;
     private double _elapsedRecordTime;
@@ -84,7 +86,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _timeKeeper = new TimeKeeper();
         new File("data/" + _timeKeeper.getTime()).mkdir();
         _keeper.setTime(_timeKeeper.getTime());
-        RecordBook configHistory = new RecordBook("config-history",_timeKeeper.getTime());
+        RecordBook configHistory = new RecordBook("config-history",_timeKeeper.getTime(),"txt");
         configHistory.recordConfig(Engine.getConsoleVariables().getAllConsoleVariables());
         _keeper.addBook(configHistory);
         _keeper.addNote(new StickyNotes("Memo: " + Engine.getConsoleVariables().find(ModelGlobals.memo).getcvarValue()));
@@ -131,6 +133,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     public void shutdown() {
         _recordData(-1); // -1 forces bookKeeper to record all data
         _keeper.addNote(new StickyNotes("Num viruses that left liver: " + _numLeftLiver));
+        _keeper.addNote(new StickyNotes("Num viruses squashed (Lymphocyte): " + _numSquashedLymphocyte));
+        _keeper.addNote(new StickyNotes("Num viruses squashed (Macrophage): " + _numSquashedMacrophage));
         _keeper.closeBooks();
         _keeper.closeNotes();
         Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
@@ -186,6 +190,12 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
                 ++ _numLeftLiver;
                 _keeper.addNote(new StickyNotes("Virus left liver @ " + _elapsedRuntime));
                 break;
+            case ModelGlobals.virusSquashedLymphocyte:
+                ++ _numSquashedLymphocyte;
+                break;
+            case ModelGlobals.virusSquashedMacrophage:
+                ++ _numSquashedMacrophage;
+                break;
             default:
                 break;
         }
@@ -232,6 +242,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusAddedToWorld));
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusRemovedFromWorld));
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusLeftLiver));
+        Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusSquashedLymphocyte));
+        Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusSquashedMacrophage));
     }
 
     private void _signalInterestInMessages() {
@@ -243,6 +255,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         Engine.getMessagePump().signalInterest(ModelGlobals.cellRemovedFromWorld, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.cellInfected, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.virusLeftLiver, this);
+        Engine.getMessagePump().signalInterest(ModelGlobals.virusSquashedLymphocyte, this);
+        Engine.getMessagePump().signalInterest(ModelGlobals.virusSquashedMacrophage, this);
     }
 
     private void _recordData(double deltaSeconds) {
@@ -259,10 +273,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     }
 
     private void _createBookKeeper() {
-        _bookVirusCount = new RecordBook("virus-over-time",_timeKeeper.getTime());
-        _bookInfectedCount = new RecordBook("infected-over-time", _timeKeeper.getTime());
-        _bookHealthyCount = new RecordBook("healthy-over-time",_timeKeeper.getTime()) ;
-        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",_timeKeeper.getTime());
+        _bookVirusCount = new RecordBook("virus-over-time",_timeKeeper.getTime(),"csv");
+        _bookInfectedCount = new RecordBook("infected-over-time", _timeKeeper.getTime(),"csv");
+        _bookHealthyCount = new RecordBook("healthy-over-time",_timeKeeper.getTime(),"csv") ;
+        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",_timeKeeper.getTime(),"csv");
         _keeper.addBook(_bookVirusCount);
         _keeper.addBook(_bookInfectedCount);
         _keeper.addBook(_bookHealthyCount);
