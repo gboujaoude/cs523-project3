@@ -57,6 +57,7 @@ public class Engine implements PulseEntity, MessageHandler {
     private Filesystem _fileSys;
     private volatile int _maxFrameRate;
     private final int _maxMessageQueueProcessingRate = 240; // Measures in Hertz, i.e. times per second
+    private double _timeScalingFactor = 1.0;
     private volatile long _lastMessageQueueFrameTimeMS;
     private volatile long _lastFrameTimeMS;
     private volatile boolean _isRunning = false;
@@ -90,7 +91,7 @@ public class Engine implements PulseEntity, MessageHandler {
             double deltaSeconds = elapsedNSec / 1000000000.0;
             _startTimeNSec = currTimeNSec;
             try {
-                _entity.process(deltaSeconds);
+                _entity.process(deltaSeconds * _timeScalingFactor);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -164,9 +165,10 @@ public class Engine implements PulseEntity, MessageHandler {
                         if (_initializing) return; // Engine is not ready to run
                         long currentTimeMS = System.currentTimeMillis();
                         double deltaSeconds = (currentTimeMS - _lastFrameTimeMS) / 1000.0;
+                        _timeScalingFactor = Engine.getConsoleVariables().find(Constants.TIME_SCALING_FACTOR).getcvarAsFloat();
                         // Don't pulse faster than the maximum refresh rate
                         if (deltaSeconds >= (1.0 / _maxFrameRate)) {
-                            pulse(deltaSeconds);
+                            pulse(deltaSeconds * _timeScalingFactor);
                             _lastFrameTimeMS = currentTimeMS;
                         }
                         // Message processing happens at a very fast rate, i.e. 240 times per second
@@ -437,6 +439,7 @@ public class Engine implements PulseEntity, MessageHandler {
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.HEADLESS, "false", "false"));
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ALLOW_MOUSE_MOVE, "true", "true"));
         getConsoleVariables().registerVariable(new ConsoleVariable(Constants.ALLOW_MOUSE_SCROLL, "true", "true"));
+        getConsoleVariables().registerVariable(new ConsoleVariable(Constants.TIME_SCALING_FACTOR, "1.0", "1.0"));
     }
 
     private void _registerMessageTypes()

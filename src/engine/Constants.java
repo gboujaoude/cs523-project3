@@ -111,4 +111,6 @@ public class Constants {
     public static final String ALLOW_MOUSE_MOVE = "allow_mouse_move";
     // Allows you to specify whether or not mouse scroll events should be captured
     public static final String ALLOW_MOUSE_SCROLL = "allow_mouse_scroll";
+    // Allows you to set the engine's time scaling factor to speed up, slow down or pause the engine
+    public static final String TIME_SCALING_FACTOR = "time_scaling_factor";
 }
