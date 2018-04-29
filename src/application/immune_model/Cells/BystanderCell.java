@@ -14,9 +14,4 @@ public class BystanderCell extends Circle2D {
     public void setWidthHeight(double radiusX, double radiusY) {
         super.setWidthHeight(radiusX, radiusY);
     }
-
-    @Override
-    public void render(GraphicsContext gc, double x, double y) {
-        super.render(gc, x, y);
-    }
 }

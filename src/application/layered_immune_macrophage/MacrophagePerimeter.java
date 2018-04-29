@@ -20,16 +20,6 @@ public class MacrophagePerimeter extends Circle2D implements PulseEntity {
     }
 
     @Override
-    public void setWidthHeight(double radiusX, double radiusY) {
-        super.setWidthHeight(radiusX, radiusY);
-    }
-
-    @Override
-    public void render(GraphicsContext gc, double x, double y) {
-        super.render(gc, x, y);
-    }
-
-    @Override
     public void onActorOverlapped(Actor self, HashSet<Actor> collidedWith) {
         // Check for viruses and infected cells
         _enemyCounter = 0;

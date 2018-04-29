@@ -460,6 +460,11 @@ public class Engine implements PulseEntity, MessageHandler {
         getMessagePump().registerMessage(new Message(Constants.INCREMENT_CAMERA_Y_OFFSET));
         getMessagePump().registerMessage(new Message(Constants.RESET_CAMERA_XY_OFFSET));
         getMessagePump().registerMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
+        getMessagePump().registerMessage(new Message(Constants.SET_CAMERA_ZOOM));
+        getMessagePump().registerMessage(new Message(Constants.CAMERA_OFFSET_CHANGED));
+        getMessagePump().registerMessage(new Message(Constants.CAMERA_ZOOM_CHANGED));
+        getMessagePump().registerMessage(new Message(Constants.SET_CAMERA_X_OFFSET));
+        getMessagePump().registerMessage(new Message(Constants.SET_CAMERA_Y_OFFSET));
     }
 
     /**

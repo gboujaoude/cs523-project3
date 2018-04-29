@@ -56,8 +56,9 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
         }
         double worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsFloat();
         double locationY = getLocationY();
-        if ((locationY <= 10 || locationY > (worldHeight * .70)) &&
-                getSpeedY() < 0.0) setSpeedXY(getSpeedX(), -getSpeedY());
+        double speedX = getSpeedX();
+        double speedY = getSpeedY();
+        if ((locationY <= 10 && speedY < 0.0) || (locationY > worldHeight * 0.7 && speedY > 0.0)) setSpeedXY(speedX, -speedY);
     }
 
     /**

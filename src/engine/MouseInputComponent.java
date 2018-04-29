@@ -47,6 +47,12 @@ public abstract class MouseInputComponent {
     public abstract void mouseMoved(double amountX, double amountY, double mouseX, double mouseY);
 
     /**
+     * Called whenever the a scroll event is registered.
+     * @param direction indicates direction with a value of -1 or 1
+     */
+    public abstract void scrolled(double direction);
+
+    /**
      * When the mouse is fully clicked (down then up), it will generate a collision response
      * with world actors underneath the mouse cursor. The type of the actors will need to
      * be checked since they could be render entities or they could be something else.

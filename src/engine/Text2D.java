@@ -37,9 +37,10 @@ public class Text2D extends GraphicsEntity {
     }
 
     @Override
-    public void render(GraphicsContext gc, double x, double y) {
-        gc.setFont(_font);
-        gc.fillText(_text, x, y, getWidth());
+    public void render(GraphicsContext gc, double x, double y, double width, double height) {
+        Font font = new Font(height);
+        gc.setFont(font);
+        gc.fillText(_text, x, y, width);
     }
 
     @Override

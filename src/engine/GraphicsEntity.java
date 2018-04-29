@@ -48,11 +48,13 @@ public abstract class GraphicsEntity extends ActorGraph {
      * object such as a square or a circle.
      *
      * @param gc active graphics context from the rendering system
-     * @param x x-location for this entity (renderer likely recalculated your location, so use this)
-     * @param y y-location for this entity (renderer likely recalculated your location, so use this)
+     * @param x screen x-location for this entity (renderer likely recalculated your location, so use this)
+     * @param y screen y-location for this entity (renderer likely recalculated your location, so use this)
+     * @param width what the renderer has calculated your screen width to be
+     * @param height what the renderer has calculated your screen height to be
      */
     // package-private
-    abstract void render(GraphicsContext gc, double x, double y);
+    public abstract void render(GraphicsContext gc, double x, double y, double width, double height);
 
     public void setTexture(String texture)
     {

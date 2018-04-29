@@ -64,7 +64,10 @@ public class MessagePump {
     {
         // Only add it if it has not been added yet
         System.out.println("Registering message type (" + message.getMessageName() + ")");
-        _registeredMessages.putIfAbsent(message.getMessageName(), message);
+        Message msg = _registeredMessages.putIfAbsent(message.getMessageName(), message);
+        if (msg != null) {
+            throw new RuntimeException("ERROR: Duplicate conflicting message names registered with message pump [" + message.getMessageName() + "]");
+        }
         _registeredHandlers.putIfAbsent(message, new LinkedList<>());
     }
 

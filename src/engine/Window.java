@@ -8,6 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -42,10 +43,12 @@ public class Window implements MessageHandler, PulseEntity {
         boolean moved = false;
         boolean pressedDown = false;
         boolean released = false;
+        boolean scrolled = false;
         double x = 0.0;
         double y = 0.0;
         double movedX = 0.0;
         double movedY = 0.0;
+        double scrollDirection = 0.0;
         MouseButtonTypes button;
     }
 
@@ -72,6 +75,12 @@ public class Window implements MessageHandler, PulseEntity {
         void mouseMoved(MouseEvent event) {
             swap(event.getX(), event.getY());
             _snapshot.moved = true;
+        }
+
+        void scrolled(ScrollEvent event) {
+            double amount = event.getDeltaY();
+            _snapshot.scrollDirection = amount < 0 ? -1 : 1;
+            _snapshot.scrolled = true;
         }
 
         MouseSnapshot snapshot() {
@@ -180,6 +189,7 @@ public class Window implements MessageHandler, PulseEntity {
         _jfxScene.setOnMouseReleased(_mouseInputManager::mouseReleased);
         _jfxScene.setOnMouseMoved(_mouseInputManager::mouseMoved);
         _jfxScene.setOnMouseDragged(_mouseInputManager::mouseMoved);
+        _jfxScene.setOnScroll(_mouseInputManager::scrolled);
         stage.setScene(_jfxScene);
         stage.show();
         _gc = _canvas.getGraphicsContext2D();
@@ -257,6 +267,7 @@ public class Window implements MessageHandler, PulseEntity {
             if (snapshot.pressedDown) component.mousePressedDown(snapshot.x, snapshot.y, snapshot.button);
             if (snapshot.released) component.mouseReleased(snapshot.x, snapshot.y, snapshot.button);
             if (snapshot.moved) component.mouseMoved(snapshot.movedX, snapshot.movedY, snapshot.x, snapshot.y);
+            if (snapshot.scrolled) component.scrolled(snapshot.scrollDirection);
         }
     }
 }

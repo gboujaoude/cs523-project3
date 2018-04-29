@@ -92,6 +92,13 @@ public class Macrophage extends Circle2D implements PulseEntity{
             _emptyPouch();
             _elapsedSec = 0;
         }
+
+        // Make sure the macrophage does not go out of bounds
+        double worldHeight = Engine.getConsoleVariables().find(Constants.WORLD_HEIGHT).getcvarAsFloat();
+        double locationY = getLocationY();
+        double speedX = getSpeedX();
+        double speedY = getSpeedY();
+        if ((locationY <= 10 && speedY < 0.0) || (locationY > worldHeight * 0.6 && speedY > 0.0)) setSpeedXY(speedX, -speedY);
     }
 
     private void _emptyPouch() {

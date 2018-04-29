@@ -19,8 +19,8 @@ public class Circle2D extends GraphicsEntity {
     }
 
     @Override
-    public void render(GraphicsContext gc, double x, double y) {
-        gc.fillOval(x, y, getWidth(), getHeight());
+    public void render(GraphicsContext gc, double x, double y, double width, double height) {
+        gc.fillOval(x, y, width, height);
     }
 
     @Override

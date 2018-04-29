@@ -54,10 +54,22 @@ public class Constants {
     // Increments the camera's x offset, meaning the data should be a double
     public static final String INCREMENT_CAMERA_X_OFFSET = "increment_camera_x_offset";
     public static final String INCREMENT_CAMERA_Y_OFFSET = "increment_camera_y_offset";
+    // Sets the camera's x/y offset instead of incrementing
+    public static final String SET_CAMERA_X_OFFSET = "set_camera_x_offset";
+    public static final String SET_CAMERA_Y_OFFSET = "set_camera_y_offset";
+    // This message gets broadcast whenever the x or y camera offsets get changed. The data
+    // part of the message will be a pair of doubles (Pair<Double, Double>) where the key
+    // is the new x-value offset and the value is the new y-value offset.
+    public static final String CAMERA_OFFSET_CHANGED = "camera_offset_changed";
     // Resets the camera's x and y offset back to their defaults
     public static final String RESET_CAMERA_XY_OFFSET = "reset_camera_xy_offset";
     // Shuts down the engine
     public static final String PERFORM_FULL_ENGINE_SHUTDOWN = "perform_full_engine_shutdown";
+    // Default camera zoom is 1.0. These can be on the range (0, max_double].
+    public static final String SET_CAMERA_ZOOM = "set_camera_zoom";
+    // This message gets broadcast whenever the camera zoom is changed, and the data part
+    // of the message will be a Double containing the new zoom level
+    public static final String CAMERA_ZOOM_CHANGED = "camera_zoom_changed";
 
     /**
      * The following are console variables that will be registered at startup

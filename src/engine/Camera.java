@@ -1,6 +1,7 @@
 package engine;
 
 import engine.math.Vector3;
+import javafx.util.Pair;
 
 /**
  * Represents a virtual camera which can be attached
@@ -52,6 +53,18 @@ public class Camera {
     public void setManualOffsetXY(double xAmount, double yAmount) {
         _manualOffsetX = xAmount;
         _manualOffsetY = yAmount;
+    }
+
+    public double getManualOffsetX() {
+        return _manualOffsetX;
+    }
+
+    public double getManualOffsetY() {
+        return _manualOffsetY;
+    }
+
+    public Pair<Double, Double> getManualOffsetXY() {
+        return new Pair<>(getManualOffsetX(), getManualOffsetY());
     }
 
     /**

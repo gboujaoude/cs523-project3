@@ -31,7 +31,7 @@ public abstract class RenderEntity extends GraphicsEntity implements PulseEntity
     }
 
     @Override
-    public void render(GraphicsContext gc, double x, double y) {
-        gc.fillRect(x, y, getWidth(), getHeight());
+    public void render(GraphicsContext gc, double x, double y, double width, double height) {
+        gc.fillRect(x, y, width, height);
     }
 }

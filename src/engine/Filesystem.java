@@ -66,9 +66,11 @@ public class Filesystem {
                 _isOpen = true;
                 Engine.scheduleLogicTasks(null, () ->
                 {
-                    while (_currFileSize.get() != _totalFileSize.get()) {
+                    String line;
+                    while (true) {
                         try {
-                            String line = _reader.readLine();
+                            line = _reader.readLine();
+                            if (line == null || line.length() == 0) break; // EOF
                             this.write(line);
                         }
                         catch (Exception e) {
@@ -175,7 +177,7 @@ public class Filesystem {
         private void _write(Character c) {
             _buffer.add(c);
             _currFileSize.getAndIncrement();
-            _totalFileSize.getAndIncrement();
+            //if (_currFileSize.get() >= _totalFileSize.get()) _totalFileSize.getAndIncrement();
         }
     }
 
