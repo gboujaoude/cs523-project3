@@ -9,6 +9,8 @@ import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
 import engine.*;
 import javafx.application.Application;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -47,6 +49,24 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     @Override
     public void init() {
         Engine.getConsoleVariables().loadConfigFile("src/resources/liver_idea_model.cfg");
+        Label label = new Label("Time Scaling Slider");
+        label.setLayoutX(25);
+        label.setLayoutY(200);
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_UI_ELEMENT, label));
+        Slider slider = new Slider(0,10,1);
+        slider.setBlockIncrement(1);
+        slider.setSnapToTicks(true);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMinorTickCount(0);
+        slider.setMajorTickUnit(1);
+        slider.setLayoutX(25);
+        slider.setLayoutY(220);
+        slider.setValue(1);
+        slider.setOnMouseClicked((e) -> {
+            Engine.getConsoleVariables().find(Constants.TIME_SCALING_FACTOR).setValue(Double.toString(Math.floor(slider.getValue())));
+        });
+        Engine.getMessagePump().sendMessage(new Message(Constants.ADD_UI_ELEMENT, slider));
         new CameraController().enableMouseInputComponent();
         _lymphocyteDisplay.addToWorld();
         _lymphocyteDisplay.setColor(_lymphocyteColor);
