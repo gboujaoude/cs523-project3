@@ -300,6 +300,7 @@ public class Engine implements PulseEntity, MessageHandler {
     {
         synchronized(this) {
             if (!_isRunning) return; // Not currently running
+            _pendingShutdown = true; // Make sure this is set
             System.err.println("Performing full engine shutdown");
             _isRunning = false;
             _registeredLogicEntities.clear();
@@ -308,7 +309,16 @@ public class Engine implements PulseEntity, MessageHandler {
             _taskManager.get().stop();
             _fileSys.shutdown();
             _isInitialized = false;
+            _pendingShutdown = false; // Now unset
         }
+    }
+
+    public boolean isEngineRunning() {
+        return _isRunning;
+    }
+
+    public boolean isShuttingDown() {
+        return _pendingShutdown;
     }
 
     // Performs memory allocation of core submodules so that
@@ -336,11 +346,6 @@ public class Engine implements PulseEntity, MessageHandler {
         if (_registeredLogicEntities.containsKey(entity)) {
             Engine.scheduleLogicTasks(null, task);
         }
-    }
-
-    // Package private
-    boolean _isEngineRunning() {
-        return _isRunning;
     }
 
     // Performs minimal allocations but initializes all submodules in the

@@ -18,6 +18,7 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
     private final double _secondsBeforeChangeDir = 5.0;
     private final double _lifeSpanSec;
     private final double _speed;
+    private final Vector3 _speedCalculationVec = new Vector3(0.0);
 
     public Lymphocyte(double x, double y) {
         super(x, y, 25, 25, 1);
@@ -86,12 +87,13 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
 
     private void _changeSpeedRandomly() {
         final double speed = _speed;
-        final double minSpeed = _speed;
-        double speedX = speed * _rng.nextDouble() + minSpeed;
+        double speedX = _rng.nextDouble();
         if (_rng.nextDouble() >= 0.5) speedX *= -1;
-        double speedY = speed * _rng.nextDouble() + minSpeed;
+        double speedY = _rng.nextDouble();
         if (_rng.nextDouble() >= 0.5) speedY *= -1;
-        setSpeedXY(speedX, speedY);
+        _speedCalculationVec.setXYZ(speedX, speedY, 0.0);
+        _speedCalculationVec.normalizeThis();
+        setSpeedXY(_speedCalculationVec.x() * speed, _speedCalculationVec.y() * speed);
     }
 
     @Override

@@ -1,0 +1,4 @@
+Memo: NormalRun
+All Viruses killed at: 08.07.743
+Num viruses that left liver: 0
+Num viruses that left liver: 0

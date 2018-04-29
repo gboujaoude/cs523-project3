@@ -84,7 +84,7 @@ public class FileHandle {
             char c = filePath.charAt(i);
             if (c == '.') {
                 foundExtension = true;
-                _extension = str.reverse().toString();
+                _extension = str.toString();
             }
             else if (c == '\\' || c == '/' && foundExtension) {
                 _fileName = str.reverse().toString();

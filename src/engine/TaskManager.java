@@ -171,8 +171,15 @@ public class TaskManager {
         synchronized(this) {
             if (!_isRunning) return; // Not running
             for (Map.Entry<Thread, Worker> entry : _workers.entrySet()) {
-                // Instruct worker to stop
-                entry.getValue().stop();
+                try {
+                    // Instruct worker to stop
+                    entry.getValue().stop();
+                    // If the current thread is not a worker thread, join it
+                    if (entry.getKey() != Thread.currentThread()) entry.getKey().join();
+                }
+                catch (Exception e) {
+                    // Do nothing
+                }
             }
             _isRunning = false; // Make sure to do this at the end
         }

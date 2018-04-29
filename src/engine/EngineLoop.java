@@ -35,7 +35,15 @@ public class EngineLoop {
         Engine engine = new Engine();
         engine.start(application);
         // Now spin while the engine is running
-        while (engine._isEngineRunning()) {
+        while (engine.isEngineRunning()) {
+            try {
+                Thread.sleep(1);
+            } catch (Exception e) {
+                // Do nothing
+            }
+        }
+        // Wait for the engine to shut down
+        while (engine.isShuttingDown()) {
             try {
                 Thread.sleep(1);
             } catch (Exception e) {
