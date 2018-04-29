@@ -12,9 +12,18 @@ public class RecordBook{
     private FileHandle handle;
     private ArrayList<Character> buffer = new ArrayList<>(100);
 
-    public RecordBook(String bookName) {
-        this.bookName = Optional.ofNullable(bookName).orElse("unknown-record-name");
+    public RecordBook(String bookName, String time) {
+        if(time != null) {
+            String folder = "data/" + time + "/";
+            this.bookName = Optional.ofNullable(folder + bookName).orElse("unknown-record-name.txt");
+        } else {
+            this.bookName = Optional.ofNullable(bookName).orElse("unknown-record-name.txt");
+        }
         this.handle = Engine.getFileSystem().open(this.bookName + ".txt", true);
+    }
+
+    public RecordBook(String bookName) {
+        this(bookName,null);
     }
 
     public void add(String record) {

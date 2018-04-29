@@ -8,32 +8,31 @@ import java.util.ArrayList;
 public class BookKeeper {
     ArrayList<RecordBook> records = new ArrayList<>();
     ArrayList<StickyNotes> notes = new ArrayList<>();
+    private String time = "";
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 
     public void addBook(RecordBook recordBook) {
         records.add(recordBook);
-    }
-
-    public void pushToPaper() {
-        System.out.println("===== Sticky Notes ====");
-        for (StickyNotes note: notes) {
-            System.out.println(note.getMsg());
-        }
     }
 
     public void closeBooks() {
         for(RecordBook book: records) {
             book.close();
         }
+    }
 
-        FileHandle vfSticky = Engine.getFileSystem().open("StickyNotes.txt", true);
-        ArrayList<Character> buffer = new ArrayList<>(100);
-        for (StickyNotes note: notes) {
-            String msg = note.getMsg();
-            for (int i = 0; i < msg.length(); ++i) buffer.add(msg.charAt(i));
-            buffer.add('\n');
+    public void closeNotes() {
+        if (notes.size() == 0) {
+            notes.add(new StickyNotes("No notes."));
         }
-        Engine.getFileSystem().synchronousWrite(vfSticky, buffer);
-        Engine.getFileSystem().close(vfSticky);
+        RecordBook recordBook = new RecordBook("sticky-notes",time);
+        for(StickyNotes note : notes) {
+            recordBook.add(note.getMsg());
+        }
+        recordBook.close();
     }
 
     public void addNote(StickyNotes note) {

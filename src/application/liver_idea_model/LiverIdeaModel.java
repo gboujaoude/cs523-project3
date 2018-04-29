@@ -4,6 +4,7 @@ import application.CameraController;
 import application.library_of_congress.BookKeeper;
 import application.library_of_congress.RecordBook;
 import application.library_of_congress.StickyNotes;
+import application.library_of_congress.TimeKeeper;
 import application.quadrants_test.Quadrant;
 import application.quadrants_test.QuadrantBuilder;
 import engine.*;
@@ -11,6 +12,7 @@ import javafx.application.Application;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Random;
 
@@ -39,6 +41,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private RecordBook _bookInfectedCount;
     private RecordBook _bookHealthyCount;
     private RecordBook _bookLymphocyteCount;
+    private TimeKeeper _timeKeeper;
 
     @Override
     public void init() {
@@ -57,6 +60,9 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _invasionTimer.setColor(_timerColor);
         _invasionTimer.setAsStaticActor(true);
         _maxRuntime = Engine.getConsoleVariables().find(ModelGlobals.maxRuntime).getcvarAsFloat();
+        _timeKeeper = new TimeKeeper();
+        new File("data/" + _timeKeeper.getTime()).mkdir();
+        _keeper.setTime(_timeKeeper.getTime());
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         _registerMessages();
         _createBookKeeper();
@@ -99,8 +105,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     @Override
     public void shutdown() {
         _recordData(-1); // -1 forces bookKeeper to record all data
-        _keeper.pushToPaper();
         _keeper.closeBooks();
+        _keeper.closeNotes();
         Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
     }
 
@@ -221,10 +227,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     }
 
     private void _createBookKeeper() {
-        _bookVirusCount = new RecordBook("virus-over-time");
-        _bookInfectedCount = new RecordBook("infected-over-time");
-        _bookHealthyCount = new RecordBook("healthy-over-time") ;
-        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time");
+        _bookVirusCount = new RecordBook("virus-over-time",_timeKeeper.getTime());
+        _bookInfectedCount = new RecordBook("infected-over-time", _timeKeeper.getTime());
+        _bookHealthyCount = new RecordBook("healthy-over-time",_timeKeeper.getTime()) ;
+        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",_timeKeeper.getTime());
         _keeper.addBook(_bookVirusCount);
         _keeper.addBook(_bookInfectedCount);
         _keeper.addBook(_bookHealthyCount);
