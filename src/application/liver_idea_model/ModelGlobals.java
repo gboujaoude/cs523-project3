@@ -39,4 +39,9 @@ public class ModelGlobals {
 
     public static final String virusAddedToWorld = "virus_added";
     public static final String virusRemovedFromWorld =  "virus_removed";
+
+    // If a virus reaches the barrier at the end of the liver, this message gets broadcast
+    // to let the system know that the virus was not successfully contained and has
+    // entered the blood stream
+    public static final String virusLeftLiver = "virus_left_liver";
 }

@@ -32,6 +32,9 @@ public class Barrier extends Rectangle2D implements PulseEntity {
                 ++_numTCellsNeeded;
                 _cytokines.add((Cytokine) actor);
             }
+            else if (actor instanceof Virus) {
+                Engine.getMessagePump().sendMessage(new Message(ModelGlobals.virusLeftLiver));
+            }
         }
     }
 

@@ -193,6 +193,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.lymphocyteRemovedFromWorld));
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusAddedToWorld));
         Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusRemovedFromWorld));
+        Engine.getMessagePump().registerMessage(new Message(ModelGlobals.virusLeftLiver));
     }
 
     private void _signalInterestInMessages() {
@@ -203,6 +204,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         Engine.getMessagePump().signalInterest(ModelGlobals.cellAddedToWorld, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.cellRemovedFromWorld, this);
         Engine.getMessagePump().signalInterest(ModelGlobals.cellInfected, this);
+        Engine.getMessagePump().signalInterest(ModelGlobals.virusLeftLiver, this);
     }
 
     private void _recordData(double deltaSeconds) {
