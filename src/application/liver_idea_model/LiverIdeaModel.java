@@ -29,6 +29,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private int _numViruses = 0;
     private int _numHealthyCells = 0;
     private int _numInfectedCells = 0;
+    private int _numLeftLiver = 0;
     private double _elapsedSeconds;
     private double _elapsedRuntime;
     private double _elapsedRecordTime;
@@ -105,6 +106,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     @Override
     public void shutdown() {
         _recordData(-1); // -1 forces bookKeeper to record all data
+        _keeper.addNote(new StickyNotes("Num viruses that left liver: " + _numLeftLiver));
         _keeper.closeBooks();
         _keeper.closeNotes();
         Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
@@ -156,6 +158,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
                 ++_numInfectedCells;
                 _cellDisplay.setText("Healthy/Infected Cells: " + _numHealthyCells + "/" + _numInfectedCells);
                 break;
+            case ModelGlobals.virusLeftLiver:
+                ++ _numLeftLiver;
+                _keeper.addNote(new StickyNotes("Virus left liver @ " + _elapsedRuntime));
+                break;
             default:
                 break;
         }
@@ -166,7 +172,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _elapsedRuntime += deltaSeconds;
 
         if (_elapsedRuntime > _maxRuntime) {
-            _keeper.addNote(new StickyNotes("Reached max runtime."));
+            _keeper.addNote(new StickyNotes("Reached max runtime. Shutting down."));
             shutdown();
         }
 

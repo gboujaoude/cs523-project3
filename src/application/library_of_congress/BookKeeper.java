@@ -30,7 +30,7 @@ public class BookKeeper {
         }
         RecordBook recordBook = new RecordBook("sticky-notes",time);
         for(StickyNotes note : notes) {
-            recordBook.add(note.getMsg());
+            recordBook.add(note.getMsg() +"\n");
         }
         recordBook.close();
     }
