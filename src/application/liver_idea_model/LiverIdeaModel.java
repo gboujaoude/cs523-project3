@@ -84,6 +84,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _timeKeeper = new TimeKeeper();
         new File("data/" + _timeKeeper.getTime()).mkdir();
         _keeper.setTime(_timeKeeper.getTime());
+        RecordBook configHistory = new RecordBook("config-history",_timeKeeper.getTime());
+        configHistory.recordConfig(Engine.getConsoleVariables().getAllConsoleVariables());
+        _keeper.addBook(configHistory);
+        _keeper.addNote(new StickyNotes("Memo: " + Engine.getConsoleVariables().find(ModelGlobals.memo).getcvarValue()));
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         _registerMessages();
         _createBookKeeper();
