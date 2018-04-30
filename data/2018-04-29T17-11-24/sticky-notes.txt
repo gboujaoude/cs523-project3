@@ -1,4 +1,0 @@
-Memo: NormalRun
-All Viruses killed at: 05.47.792
-Num viruses that left liver: 0
-Num viruses that left liver: 0
