@@ -88,9 +88,6 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _configClassification = Optional.ofNullable(Engine.getConsoleVariables().find(ModelGlobals.configClassification)
                 .getcvarValue()).orElse("");
         _timeKeeper = new TimeKeeper();
-//        new File("data/" + _timeKeeper.getTime()).mkdir();
-//        Engine.getFileSystem().createDirectory("data/" + _configClassification);
-//        Engine.getFileSystem().createDirectoryRecursive("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
         Engine.getFileSystem().createDirectoryRecursive("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
         String folderUrl = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
         _keeper = new BookKeeper(folderUrl);
