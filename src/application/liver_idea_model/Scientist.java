@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * The Scientist runs through a config files and runs multiple experiments.
+ * The Scientist conducts multiple experiments based on a list of config files.
  */
 public class Scientist {
 
-    public void run(String ... args) throws IOException {
+    public void run(String ... args) throws Exception {
         // Get list of all configs
         ArrayList<File> listOfConfigs = new ArrayList<>();
         File folder = new File("src/config_holder/");
@@ -50,7 +50,7 @@ public class Scientist {
     public static void main(String ... args) {
         try {
             new Scientist().run(args);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

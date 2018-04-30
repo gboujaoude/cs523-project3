@@ -137,7 +137,6 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _keeper.addNote(new StickyNotes("Num viruses squashed (Macrophage): " + _numSquashedMacrophage));
         _keeper.closeBooks();
         _keeper.closeNotes();
-        Engine.getMessagePump().sendMessage(Constants.PERFORM_FULL_ENGINE_SHUTDOWN);
     }
 
     /**
@@ -207,7 +206,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
         if (_elapsedRuntime > _maxRuntime) {
             _keeper.addNote(new StickyNotes("Reached max runtime. Shutting down."));
-            shutdown();
+            Engine.getMessagePump().sendMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
+            return;
         }
 
         if (_numViruses > 0 || _numInfectedCells > 0) {
@@ -229,7 +229,8 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
                     _secondFormat.format(sec) + "." + _msFormat.format(ms)));
             _recordData(deltaSeconds);
-            shutdown();
+            Engine.getMessagePump().sendMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
+            return;
         }
     }
 
