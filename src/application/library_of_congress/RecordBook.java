@@ -15,10 +15,9 @@ public class RecordBook{
     private FileHandle handle;
     private ArrayList<Character> buffer = new ArrayList<>(100);
 
-    public RecordBook(String bookName, String time, String ext) {
-        if(time != null) {
-            String folder = "data/" + time + "/";
-            this.bookName = Optional.ofNullable(folder + bookName).orElse("unknown-record-name.txt");
+    public RecordBook(String bookName, String folderPath, String ext) {
+        if(folderPath != null) {
+            this.bookName = Optional.ofNullable(folderPath + bookName).orElse("unknown-record-name.txt");
         } else {
             this.bookName = Optional.ofNullable(bookName).orElse("unknown-record-name.txt");
         }

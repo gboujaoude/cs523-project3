@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.Optional;
 import java.util.Random;
 
 public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, PulseEntity {
@@ -47,6 +48,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private RecordBook _bookHealthyCount;
     private RecordBook _bookLymphocyteCount;
     private TimeKeeper _timeKeeper;
+    private String _configClassification;
 
     @Override
     public void init() {
@@ -83,8 +85,11 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _invasionTimer.setColor(_timerColor);
         _invasionTimer.setAsStaticActor(true);
         _maxRuntime = Engine.getConsoleVariables().find(ModelGlobals.maxRuntime).getcvarAsFloat();
+        _configClassification = Optional.ofNullable(Engine.getConsoleVariables().find(ModelGlobals.configClassification)
+                .getcvarValue()).orElse("");
         _timeKeeper = new TimeKeeper();
         new File("data/" + _timeKeeper.getTime()).mkdir();
+//        new File("data/" + _configClassification + "/" + _timeKeeper.getTime()).mkdir();
         _keeper.setTime(_timeKeeper.getTime());
         RecordBook configHistory = new RecordBook("config-history",_timeKeeper.getTime(),"txt");
         configHistory.recordConfig(Engine.getConsoleVariables().getAllConsoleVariables());
@@ -274,10 +279,11 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     }
 
     private void _createBookKeeper() {
-        _bookVirusCount = new RecordBook("virus-over-time",_timeKeeper.getTime(),"csv");
-        _bookInfectedCount = new RecordBook("infected-over-time", _timeKeeper.getTime(),"csv");
-        _bookHealthyCount = new RecordBook("healthy-over-time",_timeKeeper.getTime(),"csv") ;
-        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",_timeKeeper.getTime(),"csv");
+        String folderPath = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
+        _bookVirusCount = new RecordBook("virus-over-time",folderPath,"csv");
+        _bookInfectedCount = new RecordBook("infected-over-time", folderPath,"csv");
+        _bookHealthyCount = new RecordBook("healthy-over-time",folderPath,"csv") ;
+        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",folderPath,"csv");
         _keeper.addBook(_bookVirusCount);
         _keeper.addBook(_bookInfectedCount);
         _keeper.addBook(_bookHealthyCount);

@@ -48,4 +48,5 @@ public class ModelGlobals {
     public static final String virusLeftLiver = "virus_left_liver";
 
     public static final String memo = "memo";
+    public static final String configClassification = "config_classification";
 }
