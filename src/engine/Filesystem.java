@@ -229,6 +229,7 @@ public class Filesystem {
         for (String str : folders) {
             runningDirectory.append(str);
             runningDirectory.append("/");
+            System.out.println("Attempting to create: " + runningDirectory.toString());
             this.createDirectory(runningDirectory.toString());
         }
     }
