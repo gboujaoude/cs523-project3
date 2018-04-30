@@ -32,7 +32,14 @@ public class EngineLoop {
             _lock.unlock();
         }
         Engine engine = new Engine();
-        engine.start(application);
+        try {
+            engine.start(application);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            _isRunning = false;
+            return;
+        }
         // Now spin while the engine is running
         while (engine.isEngineRunning()) {
             try {

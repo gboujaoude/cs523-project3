@@ -201,37 +201,23 @@ public class Filesystem {
     }
 
     /**
-     * Note: Only attempts to create a single directory, so if it needs to create nested directories
-     *       then it will fail
-     *
-     * Creates a new directory if it does not exist
-     * @param directory path to the directory
-     */
-    public void createDirectory(String directory) {
-        try {
-            File dir = new File(directory);
-            if (!dir.exists()) dir.mkdir();
-        }
-        catch (Exception e) {
-            System.err.println("Unable to create directory: " + directory);
-        }
-    }
-
-    /**
      * Note: Breaks a directory down into subdirectories and tries to create them recursively
      *       (ex: /folder/src/resources will attempt to create folder/, then folder/src, then folder/src/resources)
      *
      * @param directory directory to create
      */
     public void createDirectoryRecursive(String directory) {
-        ArrayList<String> folders = _parseDirectoryString(directory);
-        StringBuilder runningDirectory = new StringBuilder(directory.length());
-        for (String str : folders) {
-            runningDirectory.append(str);
-            runningDirectory.append("/");
-            System.out.println("Attempting to create: " + runningDirectory.toString());
-            this.createDirectory(runningDirectory.toString());
+        directory = _parseDirectoryString(directory);
+        System.out.println("Attempting to create: " + directory);
+        boolean result = true;
+        try {
+            File dir = new File(directory);
+            if (!dir.exists()) result = dir.mkdirs();
         }
+        catch (Exception e) {
+            result = false;
+        }
+        if (!result) System.err.println("Unable to create directory: " + directory);
     }
 
     /**
@@ -265,6 +251,7 @@ public class Filesystem {
      *         file handle was already closed/did not reference a valid file
      */
     public boolean close(FileHandle handle) {
+        if (handle == null) return false;
         synchronized (this) {
             FileDescriptor descriptor = _descriptors[handle.getHandle()];
             if (descriptor == null || !descriptor.isOpen()) return false;
@@ -289,6 +276,7 @@ public class Filesystem {
      * @return true if the write was successful and false if not
      */
     public boolean synchronousWrite(FileHandle handle, String buffer) {
+        if (handle == null) return false;
         synchronized (this) {
             FileDescriptor descriptor = _descriptors[handle.getHandle()];
             if (descriptor == null || !descriptor.isOpen()) return false;
@@ -307,6 +295,7 @@ public class Filesystem {
      * @return true if the write was successful and false if not
      */
     public boolean synchronousWrite(FileHandle handle, Collection<Character> buffer) {
+        if (handle == null) return false;
         synchronized (this) {
             FileDescriptor descriptor = _descriptors[handle.getHandle()];
             if (descriptor == null || !descriptor.isOpen()) return false;
@@ -322,6 +311,7 @@ public class Filesystem {
      * @return true if the read was successful and false if not
      */
     public boolean synchronousRead(FileHandle handle, Collection<Character> buffer) {
+        if (handle == null) return false;
         synchronized (this) {
             FileDescriptor descriptor = _descriptors[handle.getHandle()];
             if (descriptor == null || !descriptor.isOpen()) return false;
@@ -384,7 +374,7 @@ public class Filesystem {
         return builder.toString();
     }
 
-    private ArrayList<String> _parseDirectoryString(String file) {
+    private String _parseDirectoryString(String file) {
         file = _replace('\\', '/', file);
         StringBuilder str = new StringBuilder(file.length());
         if (file.contains(_cwd)) str.append(file);
@@ -396,19 +386,6 @@ public class Filesystem {
                 str.append(file);
             }
         }
-        file = str.toString();
-        StringBuilder folder = new StringBuilder(file.length());
-        ArrayList<String> folderList = new ArrayList<>(100);
-        for (int i = 0; i < file.length(); ++i) {
-            char c = folder.charAt(i);
-            if (c == '/' && folder.length() > 0) {
-                folderList.add(folder.toString());
-                folder.delete(0, folder.length());
-            }
-            else if (c != '/') folder.append(c);
-        }
-        // In case the folder did not end with /
-        if (folder.length() > 0) folderList.add(folder.toString());
-        return folderList;
+        return str.toString();
     }
 }

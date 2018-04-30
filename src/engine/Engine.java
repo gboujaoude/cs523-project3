@@ -308,7 +308,6 @@ public class Engine implements PulseEntity, MessageHandler {
             _application.shutdown();
             _window.shutdown();
             _taskManager.get().stop();
-            _fileSys.shutdown();
             _initialStage = null;
             _isInitialized = false;
             _pulseEntities = null;
@@ -318,6 +317,7 @@ public class Engine implements PulseEntity, MessageHandler {
             _taskManager.set(null);
             _window = null;
             _renderer = null;
+            _fileSys.shutdown();
             _fileSys = null;
             _updateEntities = true; // If false, nothing is allowed to move
             _requiresRestart = false;
