@@ -201,6 +201,9 @@ public class Filesystem {
     }
 
     /**
+     * Note: Only attempts to create a single directory, so if it needs to create nested directories
+     *       then it will fail
+     *
      * Creates a new directory if it does not exist
      * @param directory path to the directory
      */
@@ -211,6 +214,22 @@ public class Filesystem {
         }
         catch (Exception e) {
             System.err.println("Unable to create directory: " + directory);
+        }
+    }
+
+    /**
+     * Note: Breaks a directory down into subdirectories and tries to create them recursively
+     *       (ex: /folder/src/resources will attempt to create folder/, then folder/src, then folder/src/resources)
+     *
+     * @param directory directory to create
+     */
+    public void createDirectoryRecursive(String directory) {
+        ArrayList<String> folders = _parseDirectoryString(directory);
+        StringBuilder runningDirectory = new StringBuilder(directory.length());
+        for (String str : folders) {
+            runningDirectory.append(str);
+            runningDirectory.append("/");
+            this.createDirectory(runningDirectory.toString());
         }
     }
 
@@ -352,5 +371,43 @@ public class Filesystem {
             _descriptors[index] = descriptor;
         }
         return handle;
+    }
+
+    private String _replace(char regex, char value, String str) {
+        StringBuilder builder = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); ++i) {
+            char c = str.charAt(i);
+            if (c == regex) builder.append(value);
+            else builder.append(c);
+        }
+        return builder.toString();
+    }
+
+    private ArrayList<String> _parseDirectoryString(String file) {
+        file = _replace('\\', '/', file);
+        StringBuilder str = new StringBuilder(file.length());
+        if (file.contains(_cwd)) str.append(file);
+        else {
+            str.append(_cwd);
+            if (file.charAt(0) == '/') str.append(file);
+            else {
+                str.append('/');
+                str.append(file);
+            }
+        }
+        file = str.toString();
+        StringBuilder folder = new StringBuilder(file.length());
+        ArrayList<String> folderList = new ArrayList<>(100);
+        for (int i = 0; i < file.length(); ++i) {
+            char c = folder.charAt(i);
+            if (c == '/' && folder.length() > 0) {
+                folderList.add(folder.toString());
+                folder.delete(0, folder.length());
+            }
+            else if (c != '/') folder.append(c);
+        }
+        // In case the folder did not end with /
+        if (folder.length() > 0) folderList.add(folder.toString());
+        return folderList;
     }
 }
