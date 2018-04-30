@@ -42,7 +42,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private DecimalFormat _minuteFormat = new DecimalFormat("00");
     private DecimalFormat _secondFormat = new DecimalFormat("00");
     private DecimalFormat _msFormat = new DecimalFormat("00");
-    private BookKeeper _keeper = new BookKeeper();
+    private BookKeeper _keeper;
     private RecordBook _bookVirusCount;
     private RecordBook _bookInfectedCount;
     private RecordBook _bookHealthyCount;
@@ -88,10 +88,12 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _configClassification = Optional.ofNullable(Engine.getConsoleVariables().find(ModelGlobals.configClassification)
                 .getcvarValue()).orElse("");
         _timeKeeper = new TimeKeeper();
-        new File("data/" + _timeKeeper.getTime()).mkdir();
-//        new File("data/" + _configClassification + "/" + _timeKeeper.getTime()).mkdir();
-        _keeper.setTime(_timeKeeper.getTime());
-        RecordBook configHistory = new RecordBook("config-history",_timeKeeper.getTime(),"txt");
+//        new File("data/" + _timeKeeper.getTime()).mkdir();
+        Engine.getFileSystem().createDirectory("data/" + _configClassification);
+        Engine.getFileSystem().createDirectory("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
+        String folderUrl = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
+        _keeper = new BookKeeper(folderUrl);
+        RecordBook configHistory = new RecordBook("config-history",folderUrl,"txt");
         configHistory.recordConfig(Engine.getConsoleVariables().getAllConsoleVariables());
         _keeper.addBook(configHistory);
         _keeper.addNote(new StickyNotes("Memo: " + Engine.getConsoleVariables().find(ModelGlobals.memo).getcvarValue()));
@@ -233,7 +235,6 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             ms -= ((min * 60 * 1000) + (sec * 1000));
             _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
                     _secondFormat.format(sec) + "." + _msFormat.format(ms)));
-            _recordData(deltaSeconds);
             Engine.getMessagePump().sendMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
             return;
         }

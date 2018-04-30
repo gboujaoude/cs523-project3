@@ -8,10 +8,10 @@ import java.util.ArrayList;
 public class BookKeeper {
     ArrayList<RecordBook> records = new ArrayList<>();
     ArrayList<StickyNotes> notes = new ArrayList<>();
-    private String time = "";
+    private String folderUrl = "";
 
-    public void setTime(String time) {
-        this.time = time;
+    public BookKeeper(String folderUrl) {
+        this.folderUrl = folderUrl;
     }
 
     public void addBook(RecordBook recordBook) {
@@ -28,7 +28,7 @@ public class BookKeeper {
         if (notes.size() == 0) {
             notes.add(new StickyNotes("No notes."));
         }
-        RecordBook recordBook = new RecordBook("sticky-notes",time,"txt");
+        RecordBook recordBook = new RecordBook("sticky-notes",folderUrl,"txt");
         for(StickyNotes note : notes) {
             recordBook.add(note.getMsg() +"\n");
         }
