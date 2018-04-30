@@ -1,0 +1,10 @@
+Memo: hypothesis03-2TimesWorldSize
+Virus left liver @ 593.9099999999821
+Virus left liver @ 595.2699999999827
+Virus left liver @ 596.8849999999834
+Virus left liver @ 598.4999999999841
+Virus left liver @ 598.6699999999842
+Reached max runtime. Shutting down.
+Num viruses that left liver: 5
+Num viruses squashed (Lymphocyte): 6546
+Num viruses squashed (Macrophage): 4524

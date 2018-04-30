@@ -1,0 +1,5 @@
+Memo: hypothesis03-2TimesWorldSize
+Reached max runtime. Shutting down.
+Num viruses that left liver: 0
+Num viruses squashed (Lymphocyte): 1282
+Num viruses squashed (Macrophage): 4735

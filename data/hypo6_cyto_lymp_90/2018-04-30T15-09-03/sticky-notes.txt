@@ -1,0 +1,35 @@
+Memo: speed
+Virus left liver @ 437.96499999996405
+Virus left liver @ 464.86499999995755
+Virus left liver @ 465.3749999999574
+Virus left liver @ 480.3349999999538
+Virus left liver @ 485.9449999999525
+Virus left liver @ 485.9449999999525
+Virus left liver @ 486.11499999995243
+Virus left liver @ 496.6549999999499
+Virus left liver @ 496.82499999994985
+Virus left liver @ 496.82499999994985
+Virus left liver @ 503.2849999999483
+Virus left liver @ 503.45499999994826
+Virus left liver @ 507.8749999999472
+Virus left liver @ 516.7149999999482
+Virus left liver @ 519.7799999999495
+Virus left liver @ 533.3849999999553
+Virus left liver @ 536.2749999999565
+Virus left liver @ 538.3149999999574
+Virus left liver @ 538.4899999999575
+Virus left liver @ 538.8299999999576
+Virus left liver @ 540.8699999999585
+Virus left liver @ 541.3849999999587
+Virus left liver @ 545.6349999999605
+Virus left liver @ 545.8049999999606
+Virus left liver @ 545.9749999999607
+Virus left liver @ 547.8449999999615
+Virus left liver @ 550.7399999999627
+Virus left liver @ 551.2499999999629
+Virus left liver @ 554.1399999999642
+All Viruses killed at: 09.14.225
+Reached max runtime. Shutting down.
+Num viruses that left liver: 29
+Num viruses squashed (Lymphocyte): 2211
+Num viruses squashed (Macrophage): 3944

@@ -1,0 +1,6 @@
+Memo: speed
+All Viruses killed at: 06.43.690
+Reached max runtime. Shutting down.
+Num viruses that left liver: 0
+Num viruses squashed (Lymphocyte): 2146
+Num viruses squashed (Macrophage): 4026

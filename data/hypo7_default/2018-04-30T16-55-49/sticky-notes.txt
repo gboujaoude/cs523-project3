@@ -1,0 +1,15 @@
+Memo: DefaultCases
+Virus left liver @ 575.4849999999733
+Virus left liver @ 576.3349999999737
+Virus left liver @ 578.0349999999744
+Virus left liver @ 584.154999999977
+Virus left liver @ 584.6649999999772
+Virus left liver @ 585.5149999999776
+Virus left liver @ 585.8549999999777
+Virus left liver @ 588.914999999979
+Virus left liver @ 589.5949999999793
+Virus left liver @ 597.2499999999826
+Reached max runtime. Shutting down.
+Num viruses that left liver: 10
+Num viruses squashed (Lymphocyte): 2027
+Num viruses squashed (Macrophage): 1841
