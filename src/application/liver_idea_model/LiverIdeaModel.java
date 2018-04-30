@@ -50,6 +50,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private TimeKeeper _timeKeeper;
     private String _configClassification;
     private String _folderPath;
+    private boolean _savedVirusNote = false;
 
     @Override
     public void init() {
@@ -240,9 +241,12 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
             double min = Math.floor(_elapsedRuntime / 60);
             sec -= (min * 60);
             ms -= ((min * 60 * 1000) + (sec * 1000));
-            _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
-                    _secondFormat.format(sec) + "." + _msFormat.format(ms)));
-            Engine.getMessagePump().sendMessage(new Message(Constants.PERFORM_FULL_ENGINE_SHUTDOWN));
+            if (_savedVirusNote == false) {
+                _keeper.addNote(new StickyNotes("All Viruses killed at: " + _minuteFormat.format(min) + "." +
+                        _secondFormat.format(sec) + "." + _msFormat.format(ms)));
+                _savedVirusNote = true;
+            }
+            _recordData(deltaSeconds);
             return;
         }
     }
@@ -276,7 +280,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private void _recordData(double deltaSeconds) {
         _elapsedRecordTime += deltaSeconds;
 
-        // -1 signals shutdown
+        // -1 signals shutdown. RecordTime >= 1 to record every 1 second.
         if (_elapsedRecordTime >= 1 || deltaSeconds == -1) {
             _bookVirusCount.add(String.valueOf(_numViruses) + "\n");
             _bookInfectedCount.add(String.valueOf(_numInfectedCells)+ "\n");
