@@ -201,6 +201,20 @@ public class Filesystem {
     }
 
     /**
+     * Creates a new directory if it does not exist
+     * @param directory path to the directory
+     */
+    public void createDirectory(String directory) {
+        try {
+            File dir = new File(directory);
+            if (!dir.exists()) dir.mkdir();
+        }
+        catch (Exception e) {
+            System.err.println("Unable to create directory: " + directory);
+        }
+    }
+
+    /**
      * Opens a new file for reading/writing.
      * @param file file to open
      * @param createIfNonexistent true if the file should be created if not found
