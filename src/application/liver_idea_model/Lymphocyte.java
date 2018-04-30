@@ -136,7 +136,7 @@ public class Lymphocyte extends Circle2D implements PulseEntity {
                 }
             }
         }
-        if (numViruses > 0) System.out.println("Lymphocyte: Found [" + numViruses + "] viruses -> destroying");
-        if (numInfected > 0) System.out.println("Lymphocyte: Found [" + numInfected + "] infected cells -> destroying");
+        //if (numViruses > 0) System.out.println("Lymphocyte: Found [" + numViruses + "] viruses -> destroying");
+        //if (numInfected > 0) System.out.println("Lymphocyte: Found [" + numInfected + "] infected cells -> destroying");
     }
 }

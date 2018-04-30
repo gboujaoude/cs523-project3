@@ -60,8 +60,8 @@ public class Macrophage extends Circle2D implements PulseEntity{
                 //System.out.println("Macrophage: Found virus -> destroying");
             }
         }
-        if (numInfected > 0) System.out.println("Macrophage: Found [" + numInfected + "] infected cells -> destroying");
-        if (numViruses > 0) System.out.println("Macrophage: Found [" + numViruses + "] viruses -> destroying");
+        //if (numInfected > 0) System.out.println("Macrophage: Found [" + numInfected + "] infected cells -> destroying");
+        //if (numViruses > 0) System.out.println("Macrophage: Found [" + numViruses + "] viruses -> destroying");
     }
 
     /**

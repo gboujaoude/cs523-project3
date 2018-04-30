@@ -49,6 +49,7 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     private RecordBook _bookLymphocyteCount;
     private TimeKeeper _timeKeeper;
     private String _configClassification;
+    private String _folderPath;
 
     @Override
     public void init() {
@@ -85,16 +86,24 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
         _invasionTimer.setColor(_timerColor);
         _invasionTimer.setAsStaticActor(true);
         _maxRuntime = Engine.getConsoleVariables().find(ModelGlobals.maxRuntime).getcvarAsFloat();
-        _configClassification = Optional.ofNullable(Engine.getConsoleVariables().find(ModelGlobals.configClassification)
-                .getcvarValue()).orElse("");
         _timeKeeper = new TimeKeeper();
-        Engine.getFileSystem().createDirectoryRecursive("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
-        String folderUrl = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
-        _keeper = new BookKeeper(folderUrl);
-        RecordBook configHistory = new RecordBook("config-history",folderUrl,"txt");
+
+        if (Engine.getConsoleVariables().find(ModelGlobals.configClassification) != null) {
+            _configClassification = Engine.getConsoleVariables().find(ModelGlobals.configClassification).getcvarValue();
+            _folderPath = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
+        } else {
+            _folderPath = "data/" + _timeKeeper.getTime() + "/";
+        }
+        Engine.getFileSystem().createDirectoryRecursive(_folderPath);
+        _keeper = new BookKeeper(_folderPath);
+        RecordBook configHistory = new RecordBook("config-history",_folderPath,"cfg");
         configHistory.recordConfig(Engine.getConsoleVariables().getAllConsoleVariables());
         _keeper.addBook(configHistory);
-        _keeper.addNote(new StickyNotes("Memo: " + Engine.getConsoleVariables().find(ModelGlobals.memo).getcvarValue()));
+        String memo = "";
+        if (Engine.getConsoleVariables().find(ModelGlobals.memo) != null) {
+            memo = Engine.getConsoleVariables().find(ModelGlobals.memo).getcvarValue();
+        }
+        _keeper.addNote(new StickyNotes("Memo: " + memo));
         Engine.getMessagePump().sendMessage(new Message(Constants.ADD_PULSE_ENTITY, this));
         _registerMessages();
         _createBookKeeper();
@@ -278,11 +287,10 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
     }
 
     private void _createBookKeeper() {
-        String folderPath = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
-        _bookVirusCount = new RecordBook("virus-over-time",folderPath,"csv");
-        _bookInfectedCount = new RecordBook("infected-over-time", folderPath,"csv");
-        _bookHealthyCount = new RecordBook("healthy-over-time",folderPath,"csv") ;
-        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",folderPath,"csv");
+        _bookVirusCount = new RecordBook("virus-over-time",_folderPath,"csv");
+        _bookInfectedCount = new RecordBook("infected-over-time", _folderPath,"csv");
+        _bookHealthyCount = new RecordBook("healthy-over-time",_folderPath,"csv") ;
+        _bookLymphocyteCount = new RecordBook("lymphocytes-over-time",_folderPath,"csv");
         _keeper.addBook(_bookVirusCount);
         _keeper.addBook(_bookInfectedCount);
         _keeper.addBook(_bookHealthyCount);

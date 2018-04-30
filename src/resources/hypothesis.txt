@@ -1,0 +1,25 @@
+[push] 3. At what point does extending the world size make the effects of cell communication negligible and susceptible to virus attack.
+   -- Try different world sizes
+
+[push] 4. We hypothesize that macrophages will fail to contain the virus in almost all circumstances where the number of
+   initial viruses is sizeable (>= 100) without the support of lymphocytes, but for smaller initial invasions the
+   macrophages will be able to contain the virus on their own.
+
+[stash] 5. Right now the macrophages are distributed randomly throughout the liver cell layer (~60 percent of the world).
+   We hypothesize that the locations of the macrophages will more or less determine the reaction time
+   (initial fight followed by release of cytokines), and this will directly influence not only the duration
+   of the infection but also the number of liver cells that die.
+5a. We hypothesize that the concentration of macrophages near the “top” of the liver will result in more infected systems
+
+6. Our model splits the world into two parts: liver cells with macrophage patrols and lymphocyte layer
+   (effectively the blood stream running through the liver). We hypothesize that the speed of the cytokines and the
+   lymphocytes will have an enormous effect on the ability of our model to contain the virus,
+   with slower speeds resulting in non viable lymphocytes.
+
+7. In our model the cytokines periodically duplicate themselves, with the leading cytokine being the only one that
+   moves through the world. The first cytokine that is created as a result of duplication represents
+   the “stop command” for the lymphocyte, telling it that it has reached the end of the chain so it
+   can switch to random walk. If cytokines are set to not duplicate, no lymphocytes ever receive the stop
+   command and as a result tend to patrol the liver from top to bottom with no random walk (move to top,
+   turn around and move to bottom, repeat). We hypothesize that this patrol behavior,
+   rather than random walk, will result in much more effective lymphocytes.
