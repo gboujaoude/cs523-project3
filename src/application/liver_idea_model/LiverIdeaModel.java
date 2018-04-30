@@ -89,8 +89,9 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
                 .getcvarValue()).orElse("");
         _timeKeeper = new TimeKeeper();
 //        new File("data/" + _timeKeeper.getTime()).mkdir();
-        Engine.getFileSystem().createDirectory("data/" + _configClassification);
-        Engine.getFileSystem().createDirectory("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
+//        Engine.getFileSystem().createDirectory("data/" + _configClassification);
+//        Engine.getFileSystem().createDirectoryRecursive("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
+        Engine.getFileSystem().createDirectoryRecursive("data/" + _configClassification + "/" + _timeKeeper.getTime() + "/");
         String folderUrl = "data/" + _configClassification + "/" + _timeKeeper.getTime() + "/";
         _keeper = new BookKeeper(folderUrl);
         RecordBook configHistory = new RecordBook("config-history",folderUrl,"txt");
