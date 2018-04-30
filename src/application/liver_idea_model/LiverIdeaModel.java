@@ -286,5 +286,6 @@ public class LiverIdeaModel implements ApplicationEntryPoint, MessageHandler, Pu
 
     public static void main(String ... args) {
         EngineLoop.start(new LiverIdeaModel(),args);
+        EngineLoop.exit(); // Make sure the engine loop gets the exit signal
     }
 }

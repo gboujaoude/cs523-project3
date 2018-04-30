@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Justin Hall
  */
 public class Engine implements PulseEntity, MessageHandler {
-    private static Engine _engine; // Self-reference
+    private static volatile Engine _engine; // Self-reference
     private static volatile boolean _isInitialized = false;
     // Package private
     static final String R_RENDER_SCENE = "r_render_screen";
@@ -303,12 +303,26 @@ public class Engine implements PulseEntity, MessageHandler {
             _pendingShutdown = true; // Make sure this is set
             System.err.println("Performing full engine shutdown");
             _isRunning = false;
+            _taskCallbackMap.clear();
             _registeredLogicEntities.clear();
             _application.shutdown();
             _window.shutdown();
             _taskManager.get().stop();
             _fileSys.shutdown();
+            _initialStage = null;
             _isInitialized = false;
+            _pulseEntities = null;
+            _application = null;
+            _messageSystem.set(null);
+            _cvarSystem.set(null);
+            _taskManager.set(null);
+            _window = null;
+            _renderer = null;
+            _fileSys = null;
+            _updateEntities = true; // If false, nothing is allowed to move
+            _requiresRestart = false;
+            _headless = false;
+            _initializing = false;
             _pendingShutdown = false; // Now unset
         }
     }
@@ -327,6 +341,7 @@ public class Engine implements PulseEntity, MessageHandler {
     {
         synchronized(this) {
             if (_isInitialized) return; // Already initialized
+            System.out.println("Engine -> Pre-Initialize Stage");
             _isInitialized = true;
             _engine = this; // This is a static variable
             _cvarSystem.set(new ConsoleVariables());
@@ -353,6 +368,7 @@ public class Engine implements PulseEntity, MessageHandler {
     private void _init()
     {
         synchronized(this) {
+            System.out.println("Engine -> Initialize Stage");
             _fileSys.init(); // Make sure this gets initialized first
             getConsoleVariables().loadConfigFile("src/resources/engine.cfg");
             _registerDefaultCVars();
@@ -383,6 +399,7 @@ public class Engine implements PulseEntity, MessageHandler {
             if (!_headless) {
                 _initializing = true; // Let's the main game loop know to spin while delayed initialization takes place
                 new JFXPanel(); // This forces JavaFX to initialize itself
+                Platform.setImplicitExit(false); // Prevents JFX from killing itself after all threads are closed
                 _dispatchEngineLogic(() -> {
                     if (_initialStage != null) _initialStage.close();
                     _initialStage = new Stage();
@@ -427,7 +444,7 @@ public class Engine implements PulseEntity, MessageHandler {
             getMessagePump().clearAllMessageHandlers();
             _application.shutdown();
             _fileSys.shutdown();
-            _init();
+            //_init();
         }
     }
 

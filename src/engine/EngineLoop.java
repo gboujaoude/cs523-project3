@@ -11,8 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Provides a way to start the engine loop.
  */
 public class EngineLoop {
-    private static volatile boolean _waitingForEngineInit;
     private static volatile boolean _isRunning = false;
+    private static volatile boolean _primedToRun = true;
     private static final ReentrantLock _lock = new ReentrantLock();
 
     /**
@@ -25,9 +25,8 @@ public class EngineLoop {
         try {
             // Acquire the lock
             _lock.lock();
-            if (_isRunning) return; // Already called
+            if (_isRunning || !_primedToRun) return; // Already running or already told to exit
             _isRunning = true;
-            _waitingForEngineInit = true;
         }
         finally {
             _lock.unlock();
@@ -51,6 +50,30 @@ public class EngineLoop {
             }
         }
         _isRunning = false;
+    }
+
+    /**
+     * NOTE: Calling this while the engine loop is running will result in a no-op
+     * WARNING: Forgetting to call this could lead the application to hang when main() exits, requiring a force-kill
+     *
+     * This will tag any remaining threads for close so that the application can
+     * completely shut down. This is a final operation, meaning that the engine
+     * will be unusable after calling this without restarting the whole application.
+     *
+     * @return true if the exit operation succeeded and false if it failed for any reason
+     */
+    public static boolean exit() {
+        try {
+            _lock.lock();
+            if (_isRunning) return false; // Engine loop currently running
+            else if (!_primedToRun) return true; // Already exited
+            _primedToRun = false;
+            Platform.exit(); // Kill JFX thread manually
+        }
+        finally {
+            _lock.unlock();
+        }
+        return true;
     }
 
     // Make the constructor private since no one should be making an instance of this class

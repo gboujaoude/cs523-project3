@@ -1,0 +1,4 @@
+Memo: QuickRun
+Num viruses that left liver: 0
+Num viruses squashed (Lymphocyte): 0
+Num viruses squashed (Macrophage): 8

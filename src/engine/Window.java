@@ -201,7 +201,7 @@ public class Window implements MessageHandler, PulseEntity {
     }
 
     public void shutdown() {
-        _stage.close();
+        if (_stage != null) _stage.close();
     }
 
     @Override

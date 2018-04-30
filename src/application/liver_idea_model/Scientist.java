@@ -31,6 +31,9 @@ public class Scientist {
             updateConfigFile(file);
             EngineLoop.start(new LiverIdeaModel(),args);
         }
+
+        // Make sure the engine loop gets the exit signal
+        EngineLoop.exit();
     }
 
     private void updateConfigFile(File file) throws IOException{
