@@ -36,15 +36,23 @@ for group=1:length(configGroups)
         
         cd ../
     end
+    cd ../
     
+    % Make figure
     virus_avg = virus_avg./virus_file_counter;
-    figure;
+    my_png = figure;
     plot(floor(linspace(virusMin,virusMax,(virusMax-virusMin)+1)),virus_avg);
     hold on;
     xlim([virusMin virusMax]);
-    title(str);
+    ylim([0 6000]);
+    newTitle = strcat('Average Virus-Over-Time:',str);
+    title(newTitle,'Interpreter','none');
+    xlabel('Timestep','FontSize',12);
+    ylabel('Viruses','FontSize',12);
     hold off;
-    cd ../
+    imageFilename = strcat('virus-over-time-',str);
+    imageDir = strcat('../matlab/plots/',imageFilename);
+    saveas(my_png,imageDir,'png');
 end
 
 cd ../matlab/
